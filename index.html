@@ -97,6 +97,25 @@ h1{font-size:30px;margin:0}
 .wc.sel{background:var(--d);border-color:var(--d)}.wc.fd{background:var(--ok);color:#fff;border-color:var(--ok)}
 .wl{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;font-size:26px;font-weight:700}
 .wl span{background:var(--card);padding:6px 14px;border-radius:14px}.wl .fd{text-decoration:line-through;opacity:.5}
+.ow{display:flex;align-items:center;gap:6px}
+.ospk{width:54px;height:54px;border-radius:50%;background:var(--card);border:3px solid var(--line);font-size:24px;flex:none}
+.opt.warn{background:var(--d);color:#2b2a4c;border-color:var(--d)}
+.fb{min-height:30px;margin:12px auto 0;font-size:24px;font-weight:700;text-align:center;max-width:620px}
+.fb.r{color:var(--bad)}.fb.y{color:#9a6a00}.fb.g{color:var(--ok)}
+@media (prefers-color-scheme:dark){.fb.y{color:var(--d)}}
+.sq.warn{background:var(--d)}
+.prev{background:var(--d);color:#2b2a4c;border-radius:14px;padding:8px 14px;margin-bottom:10px;font-weight:700;text-align:center}
+.mh{margin:18px 0 6px}.mlist{display:flex;flex-wrap:wrap;gap:10px}
+.mbtn{background:var(--card);border:3px solid var(--line);border-radius:16px;padding:12px 18px;font-size:22px;font-weight:700;color:var(--ink);min-height:60px}
+.blanks{display:flex;gap:10px;justify-content:center;margin:14px 0}
+.bl{width:72px;height:84px;border-bottom:6px solid var(--ink);font-size:56px;font-weight:800;display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.pichint{font-size:80px;min-height:20px;text-align:center}
+.wgc{font-size:30px;font-weight:700;text-align:center;margin:6px 0}
+.kb button.good{background:var(--ok);color:#fff;border-color:var(--ok)}
+.kb button.bad{background:var(--bad);color:#fff;border-color:var(--bad)}
+.kb button:disabled{opacity:.85}
+.t8{background:#5a6c7d}
+
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#fff6e0">
@@ -110,30 +129,76 @@ const shuf=a=>a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(p=>p[1]);
 const INIT={earned:0,spent:0,streak:0,last:"",done:{},bought:[],autoread:true,mazeLevel:0};
 let S;try{S=Object.assign({},INIT,JSON.parse(localStorage.getItem("daily1")||"{}"))}catch(e){S=Object.assign({},INIT)}
 const save=()=>{try{localStorage.setItem("daily1",JSON.stringify(S))}catch(e){}};
+function fixS(){S.seen=S.seen||{};S.lp=S.lp||{hi:0,kn:0}}fixS();
 const today=()=>new Date().toISOString().slice(0,10);
 const bal=()=>S.earned-S.spent;
-let raf=0,chain=0,speakOn=true,PL=null;
-function stopScene(){PL=null;cancelAnimationFrame(raf);clearTimeout(chain);try{speechSynthesis.cancel()}catch(e){}}
+let raf=0,chain=0,speakOn=true,PL=null,qtok=0;
+function stopScene(){PL=null;qtok++;document.onkeydown=null;cancelAnimationFrame(raf);clearTimeout(chain);try{speechSynthesis.cancel()}catch(e){}}
 const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 let day=new Date().getDay()||7;
 const PLAN={
 1:{math:"add20",game:"pawn",words:"en1",puz:"maze",ex:"sci"},
-2:{math:"sub20",game:"sudoku",words:"hi1",puz:"memory",ex:"coins"},
-3:{math:"pattern",game:"rook",words:"kn1",puz:"crossword",ex:"sci"},
+2:{math:"sub20",game:"sudoku",words:"hi",puz:"memory",ex:"coins"},
+3:{math:"pattern",game:"rook",words:"kn",puz:"crossword",ex:"sci"},
 4:{math:"add2",game:"sudoku",words:"en2",puz:"clock",ex:"coins"},
-5:{math:"sub2",game:"bishop",words:"hi2",puz:"wordsearch",ex:"sci"},
-6:{math:"mixed",game:"sudoku",words:"kn2",puz:"maze",ex:"coins"},
-7:{math:"mixed",game:"chessmix",words:"review",puz:"memory",ex:"jars"}};
-const WORDS={
-en1:[["gigantic","very, very big","🐘"],["tiny","very small","🐜"],["curious","wants to know more","🔍"]],
-en2:[["brave","not afraid","🦁"],["gentle","soft and kind","🐑"],["delicious","tastes very good","🍰"]]};
-/* letter, sound, example word, word in English letters, meaning, picture */
-const LET={
-hi1:[["अ","a","अजगर","ajgar","python snake","🐍"],["आ","aa","आम","aam","mango","🥭"],["इ","i","इमारत","imaarat","building","🏢"],["ई","ee","ईंट","eent","brick","🧱"]],
-hi2:[["उ","u","उल्लू","ullu","owl","🦉"],["ऊ","oo","ऊँट","oont","camel","🐪"],["ए","ae","एक","ek","one","1️⃣"],["ओ","o","ओस","os","dew drops","💧"]],
-kn1:[["ಅ","a","ಅಮ್ಮ","amma","mother","👩"],["ಆ","aa","ಆನೆ","aane","elephant","🐘"],["ಇ","i","ಇಲಿ","ili","mouse","🐭"],["ಈ","ee","ಈರುಳ್ಳಿ","eerulli","onion","🧅"]],
-kn2:[["ಉ","u","ಉಂಗುರ","ungura","ring","💍"],["ಊ","oo","ಊಟ","oota","meal","🍛"],["ಎ","e","ಎಲೆ","ele","leaf","🍃"],["ಏ","ae","ಏಣಿ","eni","ladder","🪜"]]};
-const HINT={a:"a as in about",aa:"aa as in car",i:"i as in sit",ee:"ee as in see",u:"u as in put",oo:"oo as in moon",e:"e as in egg",ae:"ay as in play",o:"o as in go"};
+5:{math:"sub2",game:"bishop",words:"hi",puz:"wordsearch",ex:"sci"},
+6:{math:"mixed",game:"sudoku",words:"kn",puz:"maze",ex:"coins"},
+7:{math:"mixed",game:"chessmix",words:"review",puz:"wordguess",ex:"jars"}};
+/* English words with meanings: 8 sets of 3 */
+const EW=[
+["gigantic","very, very big","🐘"],["tiny","very small","🐜"],["curious","wants to know more","🔍"],
+["brave","not afraid","🦁"],["gentle","soft and kind","🐑"],["delicious","tastes very good","🍰"],
+["quiet","makes no sound","🤫"],["noisy","makes a lot of sound","📢"],["speedy","very fast","🐆"],
+["slow","not fast","🐢"],["shiny","bright and sparkling","✨"],["fluffy","soft like cotton","☁️"],
+["sleepy","ready for bed","😴"],["hungry","wants some food","🍽️"],["thirsty","wants a drink","🥤"],
+["cheerful","happy and smiling","😊"],["colourful","has many colours","🌈"],["fragile","can break easily","🥚"],
+["ancient","very, very old","🏛️"],["helpful","likes to help others","🤝"],["polite","has good manners","🙏"],
+["messy","not neat or tidy","🌪️"],["freezing","very, very cold","🥶"],["enormous","extremely big","🐋"]];
+const ESETS=Array.from({length:8},(_,i)=>EW.slice(i*3,i*3+3));
+
+/* Hindi and Kannada letters: [letter, sound]. Two new letters per lesson. */
+const SEQ={
+hi:[["अ","a"],["आ","aa"],["इ","i"],["ई","ee"],["उ","u"],["ऊ","oo"],["ए","ay"],["ऐ","ai"],["ओ","o"],["औ","au"],["क","ka"],["ख","kha"],["ग","ga"],["घ","gha"],["च","cha"],["छ","chha"],["ज","ja"],["झ","jha"],["ट","ta"],["ठ","tha"]],
+kn:[["ಅ","a"],["ಆ","aa"],["ಇ","i"],["ಈ","ee"],["ಉ","u"],["ಊ","oo"],["ಎ","e"],["ಏ","ay"],["ಐ","ai"],["ಒ","o"],["ಓ","oh"],["ಔ","au"],["ಕ","ka"],["ಖ","kha"],["ಗ","ga"],["ಘ","gha"],["ಚ","cha"],["ಛ","chha"],["ಜ","ja"],["ಝ","jha"]]};
+
+/* Word guess and memory match: [word, clue, picture] */
+const WG=[
+["CAT","A pet that says meow and likes milk.","🐱"],["DOG","A pet that says woof and wags its tail.","🐶"],["COW","I give milk and say moo.","🐄"],
+["PIG","A pink farm animal that says oink.","🐷"],["HEN","A bird on the farm that lays eggs.","🐔"],["BEE","A buzzing insect that makes honey.","🐝"],
+["ANT","A tiny insect that walks in a line.","🐜"],["OWL","A bird that is awake at night and says hoot.","🦉"],["FOX","A clever orange animal with a bushy tail.","🦊"],
+["BAT","An animal that flies at night.","🦇"],["SUN","It is hot and bright and shines in the sky in the day.","☀️"],["BUS","A big vehicle that takes children to school.","🚌"],
+["CAR","It has four wheels and drives on the road.","🚗"],["HAT","You wear it on your head.","🎩"],["CUP","You drink milk or tea from it.","☕"],
+["BED","You sleep on it at night.","🛏️"],["EGG","A hen lays it. You can have it boiled.","🥚"],["KEY","You use it to open a lock.","🔑"],
+["MAP","It shows us where places are.","🗺️"],["BOX","You can keep things inside it.","📦"],["BAG","You carry your books in it.","👜"],
+["EAR","You hear with it.","👂"],["EYE","You see with it.","👁️"],["LEG","You walk with it.","🦵"],
+["BOOK","You read it. It has pages.","📖"],["BALL","It is round and you can kick or throw it.","⚽"],["CAKE","A sweet treat for a birthday.","🎂"],
+["FISH","It lives in water and swims.","🐟"],["FROG","A green animal that jumps and says ribbit.","🐸"],["DUCK","A bird that swims and says quack.","🦆"],
+["MOON","It shines in the sky at night.","🌙"],["STAR","It twinkles in the night sky.","⭐"],["TREE","It has a trunk, branches and leaves.","🌳"],
+["LION","The king of the jungle. It roars.","🦁"],["BIRD","It has wings and feathers and can fly.","🐦"],["SHIP","A big boat that sails on the sea.","🚢"],
+["DRUM","You hit it to make a boom sound.","🥁"],["RAIN","Water that falls from clouds.","🌧️"],["MILK","A white drink that comes from a cow.","🥛"],
+["APPLE","A red or green fruit that grows on trees.","🍎"],["CLOCK","It tells us the time.","🕒"],["TIGER","A big cat with orange and black stripes.","🐯"],
+["ZEBRA","A horse-like animal with black and white stripes.","🦓"]];
+const WEM={TUB:"🛁",WEB:"🕸️",TEN:"🔟",PAN:"🍳",NUT:"🥜",TEA:"🍵",SEA:"🌊",HAM:"🍖",TAP:"🚰",ONE:"1️⃣",APE:"🦍",TIE:"👔",PIE:"🥧",TWO:"2️⃣",PIN:"📌"};
+WG.forEach(x=>{WEM[x[0]]=x[2]});
+
+/* Crossword: [across top, across bottom, down left, down right] */
+const CW=[["CAT","WEB","COW","TUB"],["CAT","PAN","CUP","TEN"],["TUB","NUT","TEN","BAT"],["BUS","TEA","BAT","SEA"],["SUN","ANT","SEA","NUT"],["BEE","DOG","BED","EGG"],["HAT","MAP","HAM","TAP"],["OWL","EGG","ONE","LEG"],["ANT","EYE","APE","TIE"],["BUS","TEN","BAT","SUN"],["CUP","TEN","CAT","PIN"],["TAP","ONE","TWO","PIE"]];
+
+/* Three jars: [situation, right jar, reason] */
+const JARS=[
+["You want a big toy that costs ₹500. Which jar helps you get it?","Save","Big things cost a lot, so we save a little money each week."],
+["It is hot and you want an ice cream today. Which jar?","Spend","The spend jar is for things you want to buy now."],
+["A friend is sad. You buy them a small gift. Which jar?","Share","The share jar is for giving to other people."],
+["You want a bicycle for your next birthday. Which jar?","Save","A bicycle costs a lot, so we save for it."],
+["Your school is collecting to help people. Which jar?","Share","The share jar is for helping others."],
+["You see a balloon at the fair and want it right now. Which jar?","Spend","The spend jar is for things you want right now."],
+["You get ₹20 but you want a ₹200 game. Which jar first?","Save","To buy something big, we put money in the save jar first."],
+["You want to buy a birthday card for your cousin. Which jar?","Share","A card is a gift for someone else, so it comes from the share jar."],
+["You are thirsty and want a juice now. Which jar?","Spend","Something for today comes from the spend jar."],
+["You want a ticket for a show next month. Which jar?","Save","We save for things that are coming later."],
+["A hungry street dog needs some biscuits. Which jar?","Share","Helping someone in need comes from the share jar."],
+["You see a sticker you really want today. Which jar?","Spend","The spend jar is for small things you want now."]];
+
 const LANG={en:"en-IN",hi:"hi-IN",kn:"kn-IN"};
 const REWARDS=[["🍽️","Choose tonight's dinner",30],["🌳","Extra park visit",40],["🎲","Family game night",50],["🎬","Pick the movie",60],["🍦","Ice cream outing",70]];
 const POOL=["🐶","🌞","📚","🚗","🍎","🐘"];
@@ -146,44 +211,81 @@ const isDone=id=>(S.done[today()]||[]).includes(id);
 function opts(a,lo=0){const s=new Set([a]);while(s.size<3){const v=a+pick([-10,-2,-1,1,2,10]);if(v>=lo)s.add(v)}return shuf([...s])}
 
 /* ---------- Day plan and chaining ---------- */
+const realDay=()=>new Date().getDay()||7;
+let preview=false,curId="";const skipped=new Set();
 const wkNum=()=>Math.floor((Date.now()/864e5+3)/7);
-const PZNAME={maze:"Maze",memory:"Memory match",crossword:"Crossword",clock:"Reading the clock",wordsearch:"Word search"};
+const PZNAME={maze:"Maze",memory:"Memory match",crossword:"Crossword",clock:"Reading the clock",wordsearch:"Word search",wordguess:"Word guess"};
+function begin(id){curId=id;skipped.delete(id);clearTimeout(chain)}
+function fresh(key,arr,n){
+ n=n||1;const seen=S.seen[key]=S.seen[key]||[];
+ let pool=arr.map((_,i)=>i).filter(i=>!seen.includes(i));
+ if(pool.length<n){seen.length=0;pool=arr.map((_,i)=>i)}
+ const ch=shuf(pool).slice(0,n);seen.push(...ch);save();return ch.map(i=>arr[i])}
 function acts(){const p=PLAN[day];return [
- {id:"math"+day,name:"Number fun",run:runMath},
- {id:"game"+day,name:p.game=="sudoku"?"Mini sudoku":"Chess",run:runGame},
- {id:"words"+day,name:"Words and letters",run:runWords},
- {id:"puz"+day,name:PZNAME[p.puz],run:runPuz},
- p.ex=="sci"?{id:"sci"+day,name:"How things work",run:()=>runSci(feat())}:{id:"money"+day,name:p.ex=="jars"?"Three jars":"Coin shop",run:runMoney}]}
-const nextAct=()=>acts().find(a=>!isDone(a.id));
-function startDay(){(nextAct()||acts()[0]).run()}
-function runPuz(){({maze:runMaze,memory:runMemory,crossword:runCrossword,clock:()=>runSci("clock","puz"+day),wordsearch:runWordSearch})[PLAN[day].puz]()}
+ {id:"math"+day,name:"Number fun",run:()=>runMath()},
+ {id:"game"+day,name:p.game=="sudoku"?"Mini sudoku":"Chess",run:()=>runGame()},
+ {id:"words"+day,name:"Words and letters",run:()=>runWords()},
+ {id:"puz"+day,name:PZNAME[p.puz],run:()=>runPuz()},
+ p.ex=="sci"?{id:"sci"+day,name:"How things work",run:()=>runSci(feat())}:{id:"money"+day,name:p.ex=="jars"?"Three jars":"Coin shop",run:()=>runMoney()}]}
+/* Stars only for today's plan, the first time each day */
+const inPlan=id=>!preview&&day===realDay()&&acts().some(a=>a.id===id);
+const nextAct=()=>acts().find(a=>!isDone(a.id)&&!skipped.has(a.id));
+function startDay(){const left=acts().filter(a=>!isDone(a.id));if(!left.length)return moreList();(nextAct()||left[0]).run()}
+function skipAct(){
+ stopScene();
+ if(curId==="more")return moreList();
+ if(!acts().some(a=>a.id===curId))return home();
+ skipped.add(curId);const nx=nextAct();nx?nx.run():home()}
+const skipBtn=()=>`<button class="back" onclick="skipAct()" aria-label="Skip to the next activity">Skip ⏭</button>`;
+function runPuz(ov){
+ const z=ov||PLAN[day].puz;begin(ov?"more":"puz"+day);
+ ({maze:runMaze,memory:runMemory,crossword:runCrossword,clock:()=>runSci("clock",curId),wordsearch:runWordSearch,wordguess:runWordGuess})[z]()}
 
 /* ---------- Home ---------- */
 function home(){
  stopScene();
+ if(!preview)day=realDay();
  const p=PLAN[day];
  const tile=(cls,e,t,sub,fn,id)=>`<button class="tile ${cls} ${id&&isDone(id)?"done":""}" onclick="${fn}"><span class="e">${e}</span><b>${t}</b><span>${sub}</span></button>`;
  const gname={pawn:"Chess: the pawn",rook:"Chess: the rook",bishop:"Chess: the bishop",sudoku:"Mini sudoku",chessmix:"Chess practice"}[p.game];
  const wk=p.words;
- const wl=wk=="review"?"Word review":wk[0]=="e"?"English words":wk[0]=="h"?"Hindi letters":"Kannada letters";
- const wsub=wk=="review"?"Letters and words from this week":wk[0]=="e"?"3 new words today":"4 new letters today";
- const pz={maze:["🐭","Maze","Help the mouse find the cheese"],memory:["🃏","Memory match","Find the pairs"],crossword:["✏️","Crossword","Fill in the words"],clock:["🕒","Reading the clock","Learn to tell the time"],wordsearch:["🔎","Word search","Find the hidden words"]}[p.puz];
+ const wl=wk=="review"?"Word review":wk[0]=="e"?"English words":wk=="hi"?"Hindi letters":"Kannada letters";
+ const wsub=wk=="review"?"Words and letters so far":wk[0]=="e"?"3 new words today":"2 new letters today";
+ const pz={maze:["🐭","Maze","Help the mouse find the cheese"],memory:["🃏","Memory match","Match words and pictures"],crossword:["✏️","Crossword","Fill in the words"],clock:["🕒","Reading the clock","Learn to tell the time"],wordsearch:["🔎","Word search","Find the hidden words"],wordguess:["💬","Word guess","Guess the word from the clue"]}[p.puz];
  const left=acts().filter(a=>!isDone(a.id)).length;
- $("#app").innerHTML=`<div class="top"><h1>🌟 Atharva Activity</h1><div><span class="pill">⭐ ${bal()}</span> <span class="pill">🔥 ${S.streak}</span></div></div>
- <div class="days">${[1,2,3,4,5,6,7].map(d=>`<button class="day ${d==day?"on":""}" onclick="day=${d};home()">${DAYS[d]}</button>`).join("")}</div>
- <button class="start" onclick="startDay()">${left?"▶ Start today's adventure":"🏆 All done! Play again"}</button>
+ $("#app").innerHTML=`${preview?`<div class="prev">👀 Previewing ${DAYS[day]}. No stars here. <button class="back" onclick="preview=false;home()">Back to today</button></div>`:""}
+ <div class="top"><h1>🌟 Atharva Activity</h1><div><span class="pill">⭐ ${bal()}</span> <span class="pill">🔥 ${S.streak}</span></div></div>
+ <div class="days"><span class="day on">Today: ${DAYS[day]}</span></div>
+ <button class="start" onclick="startDay()">${left?"▶ Start today's adventure":"🏆 All done! Try more activities"}</button>
  <div class="tiles">
  ${tile("t1","🔢","Number fun",{add20:"Adding to 20",sub20:"Taking away within 20",pattern:"What comes next?",add2:"Adding bigger numbers",sub2:"Taking away bigger numbers",mixed:"Mixed challenge"}[p.math],"runMath()","math"+day)}
  ${tile("t2",p.game=="sudoku"?"🧩":"♟️",gname,p.game=="sudoku"?"Fill every row, column and box":p.game=="chessmix"?"Practice all the pieces":"Learn how it moves","runGame()","game"+day)}
  ${tile("t3","📖",wl,wsub,"runWords()","words"+day)}
  ${tile("t7",pz[0],pz[1],pz[2],"runPuz()","puz"+day)}
- ${p.ex=="sci"?tile("t6","🔬","How things work","Watch and try it yourself","sciMenu()","sci"+day):tile("t4",p.ex=="jars"?"🐷":"🪙",p.ex=="jars"?"Three jars":"Coin shop",p.ex=="jars"?"Save, spend or share?":"Count coins and shop","runMoney()","money"+day)}
- ${p.ex=="sci"?"":tile("t6","🔬","How things work","Watch and try it yourself","sciMenu()","")}
+ ${p.ex=="sci"?tile("t6","🔬","How things work","Watch and try it yourself","runSci(feat())","sci"+day):tile("t4",p.ex=="jars"?"🐷":"🪙",p.ex=="jars"?"Three jars":"Coin shop",p.ex=="jars"?"Save, spend or share?":"Count coins and shop","runMoney()","money"+day)}
+ ${tile("t8","➕","More activities","Extra practice, no stars","moreList()","")}
  ${tile("t5","❓","Ask a question","Ask about anything and find a video","runAsk()","")}
  </div>
  <button class="shop" onclick="shop()">🎁 Reward shop · ⭐ ${bal()} stars to spend</button>
- <p class="note center">Finishing an activity earns 1 to 3 ⭐ (the first time each day). Stars are never taken away.</p>
+ <p class="note center">Finishing an activity in today's plan earns 1 to 3 ⭐ (the first time each day). Stars are never taken away.</p>
  <p class="center"><button class="back" onclick="parents()">⚙️ Parents</button></p>`;
+}
+
+/* ---------- More activities (no stars) ---------- */
+const MORE=[
+["🔢 Numbers",[["Add to 20",()=>runMath("add20")],["Take away within 20",()=>runMath("sub20")],["What comes next?",()=>runMath("pattern")],["Add bigger numbers",()=>runMath("add2")],["Take away bigger numbers",()=>runMath("sub2")],["Mixed challenge",()=>runMath("mixed")]]],
+["♟️ Chess and sudoku",[["Chess: the pawn",()=>runGame("pawn")],["Chess: the rook",()=>runGame("rook")],["Chess: the bishop",()=>runGame("bishop")],["Chess practice (all pieces)",()=>runGame("chessmix")],["Mini sudoku",()=>runGame("sudoku")]]],
+["📖 Words and letters",[["English words",()=>runWords("en1")],["Hindi letters",()=>runWords("hi")],["Kannada letters",()=>runWords("kn")],["Word review",()=>runWords("review")]]],
+["🧩 Puzzles",[["Word guess",()=>runPuz("wordguess")],["Crossword",()=>runPuz("crossword")],["Word search",()=>runPuz("wordsearch")],["Maze",()=>runPuz("maze")],["Memory match",()=>runPuz("memory")],["Reading the clock",()=>runPuz("clock")]]],
+["🪙 Money",[["Coin shop",()=>runMoney("coins")],["Three jars",()=>runMoney("jars")]]],
+["🔬 How things work",[["Steering wheel",()=>runSci("steer","more")],["Magnets",()=>runSci("magnet","more")],["Day and night",()=>runSci("sky","more")],["Water cycle",()=>runSci("water","more")]]],
+["❓ Questions",[["Ask a question",()=>runAsk()]]]];
+const runMore=(i,j)=>MORE[i][1][j][1]();
+function moreList(){
+ stopScene();curId="more";
+ $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button><span class="pill">⭐ ${bal()}</span></div><h1>➕ More activities</h1>
+ <p class="note">Extra practice for when he wants more. These do not earn stars, and each one gives a fresh set.</p>
+ ${MORE.map((s,i)=>`<h3 class="mh">${s[0]}</h3><div class="mlist">${s[1].map((x,j)=>`<button class="mbtn" onclick="runMore(${i},${j})">${x[0]}</button>`).join("")}</div>`).join("")}`;
 }
 
 /* ---------- Parents ---------- */
@@ -198,6 +300,8 @@ function parentsPanel(note){
  <h3>Stars: ⭐ ${bal()}</h3>
  <p>Set the star balance:</p><input class="txt" id="sb2" type="number" inputmode="numeric" value="${bal()}"><button class="go" id="sbb">Set stars</button>
  <h3>Read questions aloud automatically</h3><button class="back" id="ar">${S.autoread?"On (tap to turn off)":"Off (tap to turn on)"}</button>
+ <h3>Preview another day's plan</h3><p class="note">Look at any day. No stars are given while previewing.</p>
+ <div class="mlist">${[1,2,3,4,5,6,7].map(d=>`<button class="mbtn" onclick="preview=true;day=${d};home()">${DAYS[d]}</button>`).join("")}</div>
  <h3>Back up progress</h3><p class="note">Copy this code and keep it somewhere safe, for example in a note. Use it to restore if the stars ever reset.</p>
  <textarea class="txt" id="bk" rows="3" readonly style="font-size:14px">${JSON.stringify(S).replace(/&/g,"&amp;").replace(/</g,"&lt;")}</textarea>
  <button class="back" id="cp">Copy code</button> <button class="back" id="dl">Download file</button>
@@ -206,145 +310,185 @@ function parentsPanel(note){
  $("#ar").onclick=()=>{S.autoread=!S.autoread;save();parentsPanel("")};
  $("#cp").onclick=()=>{const t=$("#bk");t.select();let ok=false;try{ok=document.execCommand("copy")}catch(e){}try{navigator.clipboard.writeText(t.value);ok=true}catch(e){}$("#cp").textContent=ok?"Copied ✓":"Select and copy the code"};
  $("#dl").onclick=()=>{try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:"application/json"}));a.download="atharva-progress.json";document.body.appendChild(a);a.click();a.remove()}catch(e){}};
- $("#rb").onclick=()=>{try{const o=JSON.parse($("#rs").value);if(typeof o.earned!="number"||typeof o.spent!="number")throw 0;S=Object.assign({},INIT,o);save();parentsPanel("Progress restored.")}catch(e){parentsPanel("That code did not work. Paste the whole code.")}};
+ $("#rb").onclick=()=>{try{const o=JSON.parse($("#rs").value);if(typeof o.earned!="number"||typeof o.spent!="number")throw 0;S=Object.assign({},INIT,o);fixS();save();parentsPanel("Progress restored.")}catch(e){parentsPanel("That code did not work. Paste the whole code.")}};
 }
 
 /* ---------- Generic choice quiz ---------- */
-/* Stars: 1 for finishing, +1 at 60% right first time, +1 at 90%. Max 3 per activity, only the first time each day. */
+/* Stars: 1 for finishing, +1 at 60% right first time, +1 at 90%. Max 3, only for today's plan, only the first time each day. */
 function grade(id,frac){
- if(isDone(id)){finishAct(id);return 0}
+ if(!inPlan(id)||isDone(id))return 0;
  const n=1+(frac>=.6?1:0)+(frac>=.9?1:0);star(n);finishAct(id);return n}
 const sayClean=h=>{const d=document.createElement("div");d.innerHTML=h.replace(/<\/(p|div|h\d)>/g," ");d.querySelectorAll("button").forEach(b=>b.remove());
  return d.textContent.replace(/₹\s*(\d+)/g,"$1 rupees").replace(/=\s*\?/g," equals what").replace(/,\s*\?/g,", what").replace(/−/g," minus ").replace(/\+/g," plus ").replace(/×/g," times ").replace(/=/g," equals ").replace(/\s+/g," ").trim()};
+const optSay=o=>{const c=sayClean(String(o));const t=c.replace(/[^\p{L}\p{M}\p{N}\s'.,]/gu,"").replace(/\s+/g," ").trim();return t||c};
+const fx=t=>String(t).replace(/₹\s*(\d+)/g,"$1 rupees").replace(/−/g," minus ").replace(/\+/g," plus ");
 function speakSeq(chunks){
  try{speechSynthesis.cancel()}catch(e){}
  if(window.AndroidTTS){speak(chunks[0][0],chunks[0][1]);return}
- chunks.forEach(([t,l])=>{try{const u=new SpeechSynthesisUtterance(t);u.lang=LANG[l]||"en-IN";u.rate=.85;speechSynthesis.speak(u)}catch(e){}})}
-function quiz(qs,id,title){
- let i=0,got=0,tries=0;
+ chunks.forEach(([t,l])=>{try{const u=new SpeechSynthesisUtterance(fx(t));u.lang=LANG[l]||"en-IN";u.rate=.85;speechSynthesis.speak(u)}catch(e){}})}
+const ALMOST=["Almost there!","Nearly there!","So close!","Keep going, you can do it!"];
+function quiz(qs,id,title,after){
+ let i=0,got=0,tries=0;const my=++qtok;
  const show=()=>{
-  if(i>=qs.length){const n=grade(id,got/qs.length);return end(title,n)}
-  const q=qs[i];tries=0;
+  if(i>=qs.length){const n=grade(id,got/qs.length);if(after)after(n);return end(title,n)}
+  const q=qs[i];tries=0;const ol=q.ol||"en";
   const chunks=q.say||[[sayClean(q.html),"en"]];
-  $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button><span><button class="back" id="qs" aria-label="Hear the question">🔊 Hear</button> <button class="back" id="qa" aria-label="Read questions automatically">${S.autoread?"Auto: on":"Auto: off"}</button></span><span class="pill">⭐ ${bal()}</span></div>
+  $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button><span><button class="back" id="qs" aria-label="Hear the question">🔊 Hear</button> <button class="back" id="qa" aria-label="Read questions automatically">${S.autoread?"Auto: on":"Auto: off"}</button> ${skipBtn()}</span><span class="pill">⭐ ${bal()}</span></div>
   <div class="bar"><i style="width:${i/qs.length*100}%"></i></div>
-  <div class="q">${q.html}<div class="opts">${q.o.map((o,k)=>`<button class="opt" data-k="${k}">${o}</button>`).join("")}</div></div>`;
+  <div class="q">${q.html}<div class="opts">${q.o.map((o,k)=>`<div class="ow"><button class="opt" data-k="${k}">${o}</button><button class="ospk" data-s="${k}" aria-label="Hear this answer">🔊</button></div>`).join("")}</div><div class="fb" id="fb" aria-live="polite"></div></div>`;
   $("#qs").onclick=()=>speakSeq(chunks);
   $("#qa").onclick=()=>{S.autoread=!S.autoread;save();$("#qa").textContent=S.autoread?"Auto: on":"Auto: off";if(S.autoread)speakSeq(chunks)};
   if(S.autoread)speakSeq(chunks);
+  document.querySelectorAll(".ospk").forEach(b=>b.onclick=()=>speakSeq([[optSay(q.o[b.dataset.s]),ol]]));
   document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
    const o=q.o[b.dataset.k];
-   if(String(o)===String(q.a)){b.classList.add("ok");if(!tries)got++;document.querySelectorAll(".opt").forEach(x=>x.disabled=true);setTimeout(()=>{i++;show()},800)}
-   else{tries++;b.classList.add("bad");b.disabled=true}});
+   if(String(o)===String(q.a)){b.classList.add("ok");$("#fb").textContent="";if(!tries)got++;document.querySelectorAll(".opt,.ospk").forEach(x=>x.disabled=true);setTimeout(()=>{if(my===qtok){i++;show()}},800)}
+   else{
+    tries++;b.disabled=true;b.classList.add(tries==1?"bad":"warn");
+    const lead=tries==1?"Not quite.":pick(ALMOST),w=q.why?q.why(o):"",arr=Array.isArray(w)?w:(w?[[w,"en"]]:[]);
+    const ch=[[lead,"en"],...arr];
+    const fb=$("#fb");fb.className="fb "+(tries==1?"r":"y");fb.textContent=ch.map(c=>c[0]).join(" ");
+    if(S.autoread)speakSeq(ch)}});
  };show();
 }
 function end(title,n){
- clearTimeout(chain);
+ clearTimeout(chain);document.onkeydown=null;
+ if(curId==="more"){
+  $("#app").innerHTML=`<div class="q center"><div class="big">🎉 Well done!</div><p>${title} complete. Extra activities do not earn stars.</p><button class="go" onclick="moreList()">More activities</button> <button class="back" onclick="home()">Home</button></div>`;return}
  const nx=nextAct();
  const msg=n>0?`You earned <b>${n} ⭐</b>`:`Great practice! Stars are given the first time each day.`;
  $("#app").innerHTML=`<div class="q center"><div class="big">🎉 Great job!</div><p>${title} complete. ${msg}</p>
- ${nx?`<p>Up next: <b>${nx.name}</b></p><button class="go" id="gn">Start now</button> <button class="back" onclick="home()">Home</button>`:`<p>🏆 All done for today! 🔥 ${S.streak} day streak</p><button class="go" onclick="home()">Back home</button>`}</div>`;
+ ${nx?`<p>Up next: <b>${nx.name}</b></p><button class="go" id="gn">Start now</button> <button class="back" onclick="home()">Home</button>`:`<p>🏆 All done for today! 🔥 ${S.streak} day streak</p><button class="go" onclick="home()">Back home</button> <button class="back" onclick="moreList()">More activities</button>`}</div>`;
  if(nx){$("#gn").onclick=()=>{clearTimeout(chain);nx.run()};chain=setTimeout(()=>{if(document.getElementById("gn"))nx.run()},3500)}
 }
 
+
 /* ---------- Math ---------- */
 function mq(t){
- let a,b,h;
- if(t=="add20"){a=1+R(10);b=1+R(10);return {html:`<div class="big">${a} + ${b} = ?</div>`,o:opts(a+b),a:a+b}}
- if(t=="sub20"){a=5+R(16);b=1+R(a-1);return {html:`<div class="big">${a} − ${b} = ?</div>`,o:opts(a-b),a:a-b}}
- if(t=="pattern"){const st=pick([1,2,5,10]),s=1+R(5)*(st==10?1:1);const sq=[0,1,2,3].map(k=>s+st*k);const n=s+st*4;return {html:`<p>What comes next?</p><div class="big">${sq.join(", ")}, ?</div>`,o:opts(n,0),a:n}}
- if(t=="add2"){let t1,t2,o1,o2;do{t1=1+R(8);t2=1+R(8);o1=R(9);o2=R(9)}while(t1+t2>9||o1+o2>9);a=t1*10+o1;b=t2*10+o2;return {html:`<div class="big">${a} + ${b} = ?</div>`,o:opts(a+b),a:a+b}}
- if(t=="sub2"){let t1,t2,o1,o2;do{t1=2+R(8);t2=1+R(t1);o1=R(10);o2=R(o1+1)}while(t1*10+o1<=t2*10+o2);a=t1*10+o1;b=t2*10+o2;return {html:`<div class="big">${a} − ${b} = ?</div>`,o:opts(a-b),a:a-b}}
+ let a,b;
+ if(t=="add20"){a=1+R(10);b=1+R(10);return {html:`<div class="big">${a} + ${b} = ?</div>`,o:opts(a+b),a:a+b,why:()=>`${a} plus ${b} makes ${a+b}. Start at ${a} and count up ${b} more.`}}
+ if(t=="sub20"){a=5+R(16);b=1+R(a-1);return {html:`<div class="big">${a} − ${b} = ?</div>`,o:opts(a-b),a:a-b,why:()=>`${a} take away ${b} leaves ${a-b}. Start at ${a} and count back ${b}.`}}
+ if(t=="pattern"){const st=pick([1,2,5,10]),s=1+R(5);const sq=[0,1,2,3].map(k=>s+st*k);const n=s+st*4;return {html:`<p>What comes next?</p><div class="big">${sq.join(", ")}, ?</div>`,o:opts(n,0),a:n,why:()=>`The numbers go up by ${st} each time. ${sq[3]} plus ${st} is ${n}.`}}
+ if(t=="add2"){let t1,t2,o1,o2;do{t1=1+R(8);t2=1+R(8);o1=R(9);o2=R(9)}while(t1+t2>9||o1+o2>9);a=t1*10+o1;b=t2*10+o2;return {html:`<div class="big">${a} + ${b} = ?</div>`,o:opts(a+b),a:a+b,why:()=>`Add the tens: ${t1*10} plus ${t2*10} is ${(t1+t2)*10}. Add the ones: ${o1} plus ${o2} is ${o1+o2}. Together that is ${a+b}.`}}
+ if(t=="sub2"){let t1,t2,o1,o2;do{t1=2+R(8);t2=1+R(t1);o1=R(10);o2=R(o1+1)}while(t1*10+o1<=t2*10+o2);a=t1*10+o1;b=t2*10+o2;return {html:`<div class="big">${a} − ${b} = ?</div>`,o:opts(a-b),a:a-b,why:()=>`Take away the tens: ${t1*10} minus ${t2*10} is ${(t1-t2)*10}. Take away the ones: ${o1} minus ${o2} is ${o1-o2}. So the answer is ${a-b}.`}}
  return mq(pick(["add20","sub20","pattern","add2","sub2"]))}
-function runMath(){const t=PLAN[day].math;quiz(Array.from({length:5},()=>mq(t)),"math"+day,"Number fun")}
+function runMath(ov){const t=ov||PLAN[day].math;begin(ov?"more":"math"+day);quiz(Array.from({length:5},()=>mq(t)),curId,"Number fun")}
 
 /* ---------- Money ---------- */
 function runJars(){
- const sc=[["You want a big toy that costs ₹500. Which jar helps you get it?","Save"],
- ["It is hot and you want an ice cream today. Which jar?","Spend"],
- ["A friend is sad. You buy them a small gift. Which jar?","Share"],
- ["You want a bicycle for your next birthday. Which jar?","Save"],
- ["Some people need help and your school is collecting. Which jar?","Share"],
- ["You see a balloon at the fair and want it right now. Which jar?","Spend"]];
  const lab={Save:"🐷 Save",Spend:"🛍️ Spend",Share:"🎁 Share"};
- const qs=shuf(sc).slice(0,5).map(x=>({html:`<p>${x[0]}</p>`,o:["🐷 Save","🛍️ Spend","🎁 Share"],a:lab[x[1]]}));
- quiz(qs,"money"+day,"Three jars")}
-function runMoney(){
- if(PLAN[day].ex=="jars")return runJars();
+ const id=curId,qs=fresh("jars",JARS,5).map(x=>({html:`<p>${x[0]}</p>`,o:["🐷 Save","🛍️ Spend","🎁 Share"],a:lab[x[1]],why:()=>`The right jar is ${x[1]}. ${x[2]}`}));
+ quiz(qs,id,"Three jars")}
+const ITEMS=[["🍎",5],["🍪",10],["🎈",8],["🍫",15],["✏️",7],["🍦",12],["🧁",9],["🍌",6]];
+function runMoney(ov){
+ const key=ov||PLAN[day].ex;begin(ov?"more":"money"+day);
+ if(key=="jars")return runJars();
  const qs=[];
  for(let k=0;k<5;k++){
   if(k%2==0){const n=2+R(3),cs=Array.from({length:n},()=>pick([1,2,5,10]));const tot=cs.reduce((x,y)=>x+y,0);
-   qs.push({html:`<p>How much money is this?</p><div>${cs.map(c=>`<span class="coin ${c==10&&R(2)?"n":""}">₹${c}</span>`).join("")}</div>`,o:opts(tot,1).map(v=>"₹"+v),a:"₹"+tot})}
-  else{const it=pick([["🍎",5],["🍪",10],["🎈",8],["🍫",15],["✏️",7]]),h=pick([5,8,10,12,20]);
-   qs.push({html:`<p>You have ₹${h}.<br>This costs ₹${it[1]}.</p><div class="big">${it[0]}</div><p>Can you buy it?</p>`,o:["Yes ✅","No ❌"],a:h>=it[1]?"Yes ✅":"No ❌"})}}
- quiz(qs,"money"+day,"Coin shop")}
+   qs.push({html:`<p>How much money is this?</p><div>${cs.map(c=>`<span class="coin ${c==10&&R(2)?"n":""}">₹${c}</span>`).join("")}</div>`,o:opts(tot,1).map(v=>"₹"+v),a:"₹"+tot,ol:"en",
+    why:()=>`Add the coins: ${cs.join(" plus ")} makes ${tot} rupees.`})}
+  else{const it=pick(ITEMS),h=pick([4,5,6,8,10,12,15,20]);const yes=h>=it[1];
+   qs.push({html:`<p>You have ₹${h}.<br>This costs ₹${it[1]}.</p><div class="big">${it[0]}</div><p>Can you buy it?</p>`,o:["Yes ✅","No ❌"],a:yes?"Yes ✅":"No ❌",
+    why:()=>yes?`You have ${h} rupees and it costs ${it[1]}. ${h} is enough, so you can buy it.`:`You have ${h} rupees but it costs ${it[1]}. ${h} is not enough, so you cannot buy it.`})}}
+ quiz(qs,curId,"Coin shop")}
 
 /* ---------- Words and letters ---------- */
-function letQ(l,pool,type,L){
- const others=pool.filter(x=>x[0]!==l[0]);
- if(type=="pic"){const d=shuf([...new Set(others.map(x=>x[5]))].filter(e=>e!==l[5])).slice(0,2);
-  return {html:`<p>Which picture starts with this letter?</p><div class="big" style="font-size:90px">${l[0]}</div>`,o:shuf([l[5],...d]),a:l[5],say:[["Which picture starts with this letter?","en"],[l[0],L]]}}
- const d=shuf(others.map(x=>x[0])).slice(0,2);
- return {html:`<p>Which letter does this word start with?</p><div class="big" style="font-size:44px">${l[2]} ${l[5]}</div>`,o:shuf([l[0],...d]),a:l[0],say:[["Which letter does this word start with?","en"],[l[2],L]]}}
+const HINT={a:"a as in about",aa:"aa as in car",i:"i as in sit",ee:"ee as in see",u:"u as in put",oo:"oo as in moon",e:"e as in egg",ay:"ay as in play",ai:"ai as in aisle",o:"o as in go",oh:"o as in go",au:"ow as in cow"};
+const hasVoice=L=>{try{return speechSynthesis.getVoices().some(v=>v.lang.toLowerCase().startsWith(L))}catch(e){return false}};
+const LNAME={hi:"Hindi",kn:"Kannada"};
+const sndOf=(L,ch)=>(SEQ[L].find(x=>x[0]==ch)||["",""])[1];
+function letQs(L,target,pool,useAudio){
+ const out=[];
+ target.forEach(l=>{
+  const others=pool.filter(x=>x[0]!==l[0]);
+  const optsL=shuf([l[0],...shuf(others).slice(0,2).map(x=>x[0])]);
+  out.push({html:`<p>Tap the letter that says</p><div class="big" style="font-size:64px">“${l[1]}”</div>`,o:optsL,a:l[0],ol:L,
+   say:[["Tap the letter that says "+l[1],"en"]],
+   why:o=>`${o==l[0]?"":o+" says "+sndOf(L,o)+". "}The letter that says ${l[1]} is the other one. Look at its shape and try again.`});
+  if(useAudio){
+   out.push({html:`<p>Tap the letter you hear</p><div class="big" style="font-size:54px">🔊</div>`,o:optsL,a:l[0],ol:L,
+    say:[["Tap the letter you hear","en"],[l[0],L]],
+    why:o=>`That letter says ${sndOf(L,o)}. The letter you heard says ${l[1]}.`})}
+  else{
+   const sOpts=shuf([l[1],...shuf(others).slice(0,2).map(x=>x[1])]);
+   out.push({html:`<p>What sound does this letter make?</p><div class="big" style="font-size:90px">${l[0]}</div>`,o:sOpts,a:l[1],ol:"en",
+    say:[["What sound does this letter make?","en"],[l[0],L]],
+    why:()=>`This letter says ${l[1]}. ${HINT[l[1]]?HINT[l[1]]+".":""}`})}});
+ return out}
+function runLetters(L,ov){
+ const lp=S.lp[L],seq=SEQ[L],planned=!ov&&inPlan(curId)&&!isDone(curId);
+ const known=Math.max(lp,2);
+ let target,pool;
+ if(planned){target=seq.slice(lp,lp+2);pool=seq.slice(0,Math.max(lp+2,3))}
+ else{target=shuf(seq.slice(0,known)).slice(0,2);pool=seq.slice(0,Math.max(known,3))}
+ const id=curId;
+ const cards=target.map(l=>`<div class="card"><span class="w" style="font-size:84px;min-width:110px;text-align:center">${l[0]}</span><div><span class="w" style="font-size:30px">says “${l[1]}”</span><small>${HINT[l[1]]||"Say it out loud together."}</small></div><button class="speak" onclick="speak('${l[0]}','${L}')" aria-label="Hear the letter">🔊</button></div>`);
+ $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button>${skipBtn()}</div><h1>${LNAME[L]} letters</h1><p class="note">${planned?"Two new letters today.":"Practice time."} Tap 🔊 and say each letter together. If you cannot hear a voice, just say the sound out loud.</p>${cards.join("")}<div class="center"><button class="go" id="gq">Quiz time!</button></div>`;
+ $("#gq").onclick=()=>{
+  const qs=letQs(L,target,pool,hasVoice(L));
+  if(lp>0&&planned)qs.push(...letQs(L,[pick(seq.slice(0,lp))],pool,false).slice(0,1));
+  quiz(qs,id,LNAME[L]+" letters",n=>{if(planned&&n>0){S.lp[L]=Math.min(lp+2,seq.length-2);save()}})}}
 function runReview(){
- const E=[...WORDS.en1,...WORDS.en2],qs=[];
- shuf(E).slice(0,2).forEach(w=>qs.push({html:`<p>Which word means</p><div class="big" style="font-size:36px">"${w[1]}"?</div>`,o:shuf([w[0],...shuf(E.filter(x=>x!==w)).slice(0,2).map(x=>x[0])]),a:w[0]}));
- ["hi","kn"].forEach(L=>{const pool=[...LET[L+"1"],...LET[L+"2"]];shuf(pool).slice(0,2).forEach((l,i)=>qs.push(letQ(l,pool,i?"word":"pic",L)))});
- quiz(shuf(qs),"words"+day,"Word review")}
-function runLetters(key){
- const L=key.slice(0,2),set=LET[key],pool=[...LET[L+"1"],...LET[L+"2"]];
- const cards=set.map(w=>`<div class="card"><span class="w" style="font-size:72px;min-width:96px;text-align:center">${w[0]}</span><div><span class="w" style="font-size:30px">${w[2]} ${w[5]}</span><small>${w[0]} says “${w[1]}” (${HINT[w[1]]}).<br>${w[2]} (${w[3]}) means ${w[4]}.</small></div><button class="speak" onclick="speak('${w[0]}','${L}')">🔤</button><button class="speak" onclick="speak('${w[2]}','${L}')">🔊</button></div>`);
- $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button></div><h1>${L=="hi"?"Hindi":"Kannada"} letters</h1><p class="note">Say each letter together. 🔤 says the letter and 🔊 says the word. If a voice is missing, say them aloud together.</p>${cards.join("")}<div class="center"><button class="go" id="gq">Quiz time!</button></div>`;
- $("#gq").onclick=()=>{
-  const qs=shuf([...set.map(l=>letQ(l,pool,"pic",L)),...shuf(set).slice(0,2).map(l=>letQ(l,pool,"word",L))]);
-  quiz(qs,"words"+day,"New letters")}}
-function runWords(){
- const key=PLAN[day].words;
+ const id=curId,qs=[];
+ fresh("rev",EW,2).forEach(w=>qs.push(wordQ(w,EW)));
+ ["hi","kn"].forEach(L=>{if(S.lp[L]>0){const learned=SEQ[L].slice(0,S.lp[L]);qs.push(...letQs(L,[pick(learned)],SEQ[L].slice(0,Math.max(S.lp[L],3)),false).slice(0,1))}});
+ quiz(shuf(qs),id,"Word review")}
+function wordQ(w,pool){
+ const d=shuf(pool.filter(x=>x!==w)).slice(0,2);
+ return {html:`<p>Which word means</p><div class="big" style="font-size:36px">"${w[1]}"?</div>`,o:shuf([w[0],...d.map(x=>x[0])]),a:w[0],
+  why:o=>{const x=EW.find(e=>e[0]==o);return `${x?o+" means "+x[1]+". ":""}The word that means ${w[1]} is ${w[0]}.`}}}
+function runWords(ov){
+ const key=ov||PLAN[day].words;begin(ov?"more":"words"+day);
  if(key=="review")return runReview();
- if(key[0]!="e")return runLetters(key);
- const set=WORDS[key];
+ if(key=="hi"||key=="kn")return runLetters(key,ov);
+ const planned=!ov&&inPlan(curId)&&!isDone(curId);
+ const set=planned?ESETS[(wkNum()*2+(key=="en1"?0:1))%8]:fresh("ew",EW,3);
+ const id=curId;
  const learn=set.map(w=>`<div class="card"><span class="em">${w[2]}</span><div><span class="w">${w[0]}</span><small>means ${w[1]}</small></div><button class="speak" onclick="speak('${w[0]}','en')">🔊</button></div>`);
- $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button></div><h1>New words</h1><p class="note">Read them together, then tap 🔊.</p>${learn.join("")}<div class="center"><button class="go" id="gq">Quiz time!</button></div>`;
- $("#gq").onclick=()=>{
-  const qs=shuf(set).map(w=>{const o=shuf([w[0],...shuf(set.filter(x=>x!==w)).slice(0,2).map(x=>x[0])]);return {html:`<p>Which word means</p><div class="big" style="font-size:36px">"${w[1]}"?</div>`,o,a:w[0]}});
-  quiz(qs,"words"+day,"New words")}}
+ $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button>${skipBtn()}</div><h1>New words</h1><p class="note">Read them together, then tap 🔊.</p>${learn.join("")}<div class="center"><button class="go" id="gq">Quiz time!</button></div>`;
+ $("#gq").onclick=()=>quiz(shuf(set).map(w=>wordQ(w,set.length>2?EW.filter(e=>!set.includes(e)||e===w):EW)),id,"New words")}
 
 /* ---------- Chess ---------- */
 const PIECE={pawn:["♟","The pawn walks straight forward, one step. On its very first move it may hop two steps!"],rook:["♜","The rook slides in straight lines: up, down, left or right."],bishop:["♝","The bishop slides diagonally, like a slanted line."]};
+const PRULE={pawn:"The pawn moves straight forward.",rook:"The rook moves in a straight line, up, down, left or right.",bishop:"The bishop moves in a slanted line, called a diagonal."};
 function legal(p,r,c){const s=new Set(),add=(a,b)=>{if(a>=0&&a<8&&b>=0&&b<8)s.add(a*8+b)};
  if(p=="pawn"){add(r-1,c);if(r==6)add(r-2,c)}
  else if(p=="rook"){for(let k=0;k<8;k++){if(k!=r)add(k,c);if(k!=c)add(r,k)}}
  else{for(let k=-7;k<8;k++){if(k){add(r+k,c+k);add(r+k,c-k)}}}return s}
-function runGame(){const G=PLAN[day].game;if(G=="sudoku")return sudoku();
- let i=0,good=0;const N=5;
+function runGame(ov){const G=ov||PLAN[day].game;begin(ov?"more":"game"+day);if(G=="sudoku")return sudoku();
+ const id=curId;let i=0,good=0;const N=5;
  const round=()=>{
-  if(i>=N){const n=grade("game"+day,good/N);return end("Chess practice",n)}
+  if(i>=N){const n=grade(id,good/N);return end("Chess practice",n)}
   const g=G=="chessmix"?pick(["pawn","rook","bishop"]):G;const r=g=="pawn"?2+R(5):R(8),c=R(8),L=legal(g,r,c);let h="";
   for(let k=0;k<64;k++){const rr=k>>3,cc=k&7;h+=`<button class="sq ${(rr+cc)%2?"dk":""} ${k==r*8+c?"pc":""}" data-k="${k}">${k==r*8+c?PIECE[g][0]:""}</button>`}
-  $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button><span class="pill">⭐ ${bal()}</span></div><div class="bar"><i style="width:${i/N*100}%"></i></div>
-  <p class="center">${PIECE[g][1]} <button class="speak" style="width:44px;height:44px;font-size:22px" onclick="speak(PIECE['${g}'][1],'en')" aria-label="Hear it">🔊</button><br><b>Tap a square where it can go.</b></p><div class="board">${h}</div>`;
+  $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button>${skipBtn()}<span class="pill">⭐ ${bal()}</span></div><div class="bar"><i style="width:${i/N*100}%"></i></div>
+  <p class="center">${PIECE[g][1]} <button class="speak" style="width:44px;height:44px;font-size:22px" onclick="speak(PIECE['${g}'][1],'en')" aria-label="Hear it">🔊</button><br><b>Tap a square where it can go.</b></p><div class="fb" id="fb" aria-live="polite"></div><div class="board">${h}</div>`;
   let tried=0;document.querySelectorAll(".sq").forEach(b=>b.onclick=()=>{const k=+b.dataset.k;if(k==r*8+c)return;
-   if(L.has(k)){b.classList.add("ok");if(!tried)good++;document.querySelectorAll(".sq").forEach(x=>x.disabled=true);setTimeout(()=>{i++;round()},800)}
-   else{tried++;b.classList.add("bad")}})};round()}
+   if(L.has(k)){b.classList.add("ok");$("#fb").textContent="";if(!tried)good++;document.querySelectorAll(".sq").forEach(x=>x.disabled=true);setTimeout(()=>{if(curId===id){i++;round()}},800)}
+   else{tried++;b.classList.add(tried==1?"bad":"warn");const lead=tried==1?"Not quite.":pick(ALMOST);const fb=$("#fb");fb.className="fb "+(tried==1?"r":"y");fb.textContent=lead+" "+PRULE[g];if(S.autoread)speakSeq([[lead+" "+PRULE[g],"en"]])}})};round()}
 
 /* ---------- Sudoku 4x4 ---------- */
 function sudoku(){
+ const id=curId;
  const base=[[1,2,3,4],[3,4,1,2],[2,1,4,3],[4,3,2,1]],perm=shuf([1,2,3,4]);
  const sol=base.map(r=>r.map(v=>perm[v-1])),g=sol.map(r=>r.slice()),given=g.map(r=>r.map(()=>true));
  shuf([...Array(16).keys()]).slice(0,7).forEach(k=>{g[k>>2][k&3]=0;given[k>>2][k&3]=false});
- let sel=-1,wrong=0;
+ let sel=-1,wrong=0,msg="",streakW=0;
  const ok=(r,c,v)=>{for(let k=0;k<4;k++){if(k!=c&&g[r][k]==v)return false;if(k!=r&&g[k][c]==v)return false}
   const br=r&~1,bc=c&~1;for(let a=0;a<2;a++)for(let b=0;b<2;b++)if((br+a!=r||bc+b!=c)&&g[br+a][bc+b]==v)return false;return true};
+ const why=(r,c,v)=>{for(let k=0;k<4;k++){if(k!=c&&g[r][k]==v)return `${v} is already in this row.`;if(k!=r&&g[k][c]==v)return `${v} is already in this column.`}return `${v} is already in this box.`};
  const draw=()=>{let h="";for(let k=0;k<16;k++){const r=k>>2,c=k&3,v=g[r][c];
   h+=`<button class="sc ${given[r][c]?"g":""} ${k==sel?"sel":""} ${c==1?"r2":""} ${r==1?"b2":""} ${v?"cl"+(v-1):""}" data-k="${k}">${v||""}</button>`}
-  $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button><span class="pill">⭐ ${bal()}</span></div>
-  <p class="center">Use 1, 2, 3, 4 once in every row, column and box.<br><b>Tap an empty square, then a number.</b></p><div class="sud">${h}</div>
+  $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button>${skipBtn()}<span class="pill">⭐ ${bal()}</span></div>
+  <p class="center">Use 1, 2, 3, 4 once in every row, column and box.<br><b>Tap an empty square, then a number.</b></p><div class="fb ${streakW>1?"y":"r"}" id="fb" aria-live="polite">${msg}</div><div class="sud">${h}</div>
   <div class="opts">${[1,2,3,4].map(n=>`<button class="opt" style="min-width:80px" data-n="${n}">${n}</button>`).join("")}</div>`;
   document.querySelectorAll(".sc").forEach(b=>b.onclick=()=>{const k=+b.dataset.k;if(!given[k>>2][k&3]){sel=k;draw()}});
   document.querySelectorAll("[data-n]").forEach(b=>b.onclick=()=>{if(sel<0)return;const r=sel>>2,c=sel&3,n=+b.dataset.n;
-   if(ok(r,c,n)){g[r][c]=n;sel=-1;if(g.every(x=>x.every(y=>y))){const s=grade("game"+day,clamp(1-wrong/7,0,1));return end("Mini sudoku",s)}draw()}
-   else{wrong++;const cell=document.querySelector(`.sc[data-k="${sel}"]`);cell.classList.add("bad");setTimeout(()=>cell.classList.remove("bad"),500)}})};
+   if(ok(r,c,n)){g[r][c]=n;sel=-1;msg="";streakW=0;if(g.every(x=>x.every(y=>y))){const s=grade(id,clamp(1-wrong/7,0,1));return end("Mini sudoku",s)}draw()}
+   else{wrong++;streakW++;const lead=streakW>1?pick(ALMOST):"Not quite.";const t=lead+" "+why(r,c,n);msg=t;const cell=document.querySelector(`.sc[data-k="${sel}"]`);cell.classList.add("bad");const fb=$("#fb");fb.className="fb "+(streakW>1?"y":"r");fb.textContent=t;setTimeout(()=>cell.classList.remove("bad"),500);if(S.autoread)speakSeq([[t,"en"]])}})};
  draw()}
+
 
 /* ---------- How things work (animated, offline) ---------- */
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -512,9 +656,9 @@ function sciMenu(){
 }
 
 function runSci(key,qid){
- stopScene();qid=qid||("sci"+day);
+ stopScene();qid=qid==="more"?"more":(qid||("sci"+day));begin(qid);
  const sc=SCI[key],steps=sc.steps;
- $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button><span class="pill">${sc.icon} ${sc.title}</span></div>
+ $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button>${skipBtn()}<span class="pill">${sc.icon} ${sc.title}</span></div>
  <div class="stage" id="stage">${sc.svg}</div><div class="tryz" id="tz">${sc.tryHtml}</div><div class="cap" id="cap"></div>
  <div class="bar"><i id="sb" style="width:0"></i></div>
  <div class="ctl"><button id="bk" aria-label="Back">⏮</button><button id="pp" aria-label="Pause">⏸</button><button id="fw" aria-label="Next">⏭</button><button id="mu" aria-label="Sound">${speakOn?"🔊":"🔇"}</button></div>`;
@@ -581,6 +725,36 @@ function runAsk(){
    runAsk()}};
 }
 
+/* ---------- Science question banks (6 per story, 3 asked, fresh each time) ---------- */
+const SCIQ={
+steer:[["What is the flat bar with teeth called?",["Rack","Shaft","Door"],"Rack","The flat bar with teeth is called the rack."],
+["What does the shaft carry down from the steering wheel?",["The turning","Water","Music"],"The turning","The shaft is a rod. It carries the turning from the wheel down to the gear."],
+["What do the rods push and pull?",["The front wheels","The seats","The radio"],"The front wheels","The rods are joined to the front wheels, so they push and pull them to steer."],
+["What is a gear?",["A wheel with teeth","A bag of air","A soft pillow"],"A wheel with teeth","A gear is a wheel with teeth that grab other teeth."],
+["When the gear spins, what slides left or right?",["The rack","The seat","The roof"],"The rack","The gear's teeth grab the rack, so the rack slides sideways."],
+["What do we turn to make a car go left or right?",["The steering wheel","The horn","The door"],"The steering wheel","The steering wheel is what the driver turns to steer the car."]],
+magnet:[["Different ends of two magnets…",["pull together","push apart","do nothing"],"pull together","Different ends, a north and a south, pull together."],
+["Same ends of two magnets…",["push apart","pull together","sing"],"push apart","Same ends, two norths or two souths, push each other away."],
+["Which one sticks to a magnet?",["📎","🧸","🪵"],"📎","A paper clip is made of iron, and magnets stick to iron. Toys and wood do not stick."],
+["What do magnets pull?",["Things made of iron","Things made of paper","Things made of wool"],"Things made of iron","Magnets pull things made of iron, like paper clips and nails."],
+["How many ends, or poles, does a magnet have?",["Two","Ten","Zero"],"Two","A magnet has two poles, a north and a south."],
+["Which one will a magnet NOT pick up?",["🧸","🔩","📎"],"🧸","A soft toy is not made of iron, so the magnet does not pick it up."]],
+sky:[["What spins round to give us day and night?",["Earth","Sun","Cloud"],"Earth","The Earth spins round like a top. That gives us day and night."],
+["How long does one spin of Earth take?",["One day","One hour","One year"],"One day","One full spin of the Earth takes one day."],
+["When our home faces the Sun, it is…",["day","night"],"day","When our side of the Earth faces the Sun, it is day."],
+["When our home faces away from the Sun, it is…",["night","day"],"night","When our side turns away from the Sun, it is dark. That is night."],
+["What gives us light in the day?",["The Sun","A star far away","A cloud"],"The Sun","The Sun is a very bright star that gives us light in the day."],
+["Which one shines in the sky at night?",["The Moon","The Sun","A rainbow"],"The Moon","We can see the Moon at night. The Sun is on the other side of the Earth."]],
+water:[["What warms the sea water?",["The Sun","The Moon","A fan"],"The Sun","The hot Sun warms the water."],
+["Water going up as tiny drops is called…",["evaporation","a river","snow"],"evaporation","Water rising as tiny drops is called evaporation."],
+["What falls from a heavy cloud?",["Rain","Sand","Leaves"],"Rain","When a cloud gets heavy with water, rain falls."],
+["What makes a cloud?",["Tiny drops of water","Smoke","Cotton"],"Tiny drops of water","Clouds are made of lots of tiny drops of water."],
+["Where does the rain go after it falls?",["Into rivers and the sea","Into the Sun","Up to the Moon"],"Into rivers and the sea","Rain flows into rivers, and rivers flow to the sea."],
+["The water cycle goes round and round. What is it?",["Water going up, making clouds, and falling again","Water staying in one place","Water going away forever"],"Water going up, making clouds, and falling again","The water goes up, makes clouds, falls as rain, and then goes up again."]]};
+function sciQuiz(key){return fresh("sq"+key,SCIQ[key],3).map(q=>({html:`<p>${q[0]}</p>`,o:shuf(q[1]),a:q[2],why:()=>q[3]}))}
+Object.keys(SCIQ).forEach(k=>{SCI[k].quiz=()=>sciQuiz(k)});
+const clockWhy=(h,m)=>m==0?`The long hand points to 12, so it is ${h} o'clock.`:m==30?`The long hand points to 6, so it is half past ${h}.`:m==15?`The long hand points to 3, so it is quarter past ${h}.`:`The long hand points to 9, so it is quarter to ${h%12+1}.`;
+
 /* ---------- Maze ---------- */
 function mazeGen(n){
  const c=Array.from({length:n*n},()=>({N:1,S:1,E:1,W:1,v:0}));
@@ -593,15 +767,16 @@ function mazeGen(n){
   const [d,j,o]=pick(nb);c[i][d]=0;c[j][o]=0;c[j].v=1;st.push(j)}
  return c}
 function runMaze(){
- const lvl=S.mazeLevel||0,sizes=[5+lvl,6+lvl];let m=0;
+ const id=curId,lvl=S.mazeLevel||0,sizes=[5+lvl,6+lvl];let m=0;
  const play=()=>{
-  if(m>=2){S.mazeLevel=Math.min(lvl+1,3);save();const s=grade("puz"+day,1);return end("Maze",s)}
+  if(curId!==id)return;
+  if(m>=2){const planned=inPlan(id)&&!isDone(id);const s=grade(id,1);if(planned){S.mazeLevel=Math.min(lvl+1,3);save()}return end("Maze",s)}
   const n=sizes[m],cs=44,pad=14,W=n*cs+pad*2,cells=mazeGen(n);let r=0,q=0;const trail=[[0,0]];
   let walls="";
   for(let i=0;i<n*n;i++){const y=(i/n|0)*cs+pad,x=(i%n)*cs+pad,k=cells[i];
    if(k.N)walls+=`<line x1="${x}" y1="${y}" x2="${x+cs}" y2="${y}"/>`;if(k.W)walls+=`<line x1="${x}" y1="${y}" x2="${x}" y2="${y+cs}"/>`;
    if((i/n|0)==n-1&&k.S)walls+=`<line x1="${x}" y1="${y+cs}" x2="${x+cs}" y2="${y+cs}"/>`;if(i%n==n-1&&k.E)walls+=`<line x1="${x+cs}" y1="${y}" x2="${x+cs}" y2="${y+cs}"/>`}
-  $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button><span class="pill">Maze ${m+1} of 2</span></div>
+  $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button>${skipBtn()}<span class="pill">Maze ${m+1} of 2</span></div>
   <p class="center"><b>Slide your finger to take the mouse 🐭 to the cheese 🧀</b></p>
   <div class="stage"><svg id="mz" viewBox="0 0 ${W} ${W}" style="touch-action:none;max-height:62vh"><rect width="${W}" height="${W}" rx="14" fill="#fff6e0"/>
   <polyline id="tr" fill="none" stroke="#ff7a3d" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/>
@@ -612,7 +787,7 @@ function runMaze(){
   const draw=()=>{const x=pad+q*cs+cs/2,y=pad+r*cs+cs/2;$("#pl").setAttribute("x",x);$("#pl").setAttribute("y",y+12);
    $("#tr").setAttribute("points",trail.map(([a,b])=>`${pad+b*cs+cs/2},${pad+a*cs+cs/2}`).join(" "))};
   let won=false;
-  const win=()=>{if(won)return;won=true;speak("You did it!","en");setTimeout(()=>{m++;play()},900)};
+  const win=()=>{if(won)return;won=true;speak("You did it!","en");setTimeout(()=>{if(curId===id){m++;play()}},900)};
   const step=d=>{const k=cells[r*n+q];if(k[d])return false;
    if(d=="N")r--;if(d=="S")r++;if(d=="W")q--;if(d=="E")q++;
    const l=trail.length;if(l>1&&trail[l-2][0]==r&&trail[l-2][1]==q)trail.pop();else trail.push([r,q]);
@@ -629,56 +804,53 @@ function runMaze(){
   draw()};
  play()}
 
-/* ---------- Memory match ---------- */
+/* ---------- Memory match (English: word and picture) ---------- */
 function runMemory(){
- const hi=[...LET.hi1,...LET.hi2].map(l=>[l,"hi"]),kn=[...LET.kn1,...LET.kn2].map(l=>[l,"kn"]);
- const items=day==7?[...shuf(hi).slice(0,3),...shuf(kn).slice(0,3)]:shuf(hi).slice(0,6);
- const cards=shuf(items.flatMap(([l,L],i)=>[{p:i,t:l[0],L,big:1},{p:i,t:l[5],L,big:0}]));
- $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button><span class="pill" id="mv">Tries: 0</span></div>
- <p class="center"><b>Match each letter with its picture</b></p><div class="mem">${cards.map((c,i)=>`<button class="mc" data-i="${i}" aria-label="Card"><span class="back-face">❓</span></button>`).join("")}</div>`;
+ const id=curId,items=fresh("mem",WG.filter(x=>x[0].length<=4),6);
+ const cards=shuf(items.flatMap((x,i)=>[{p:i,t:x[0],big:1},{p:i,t:x[2],big:0}]));
+ $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button>${skipBtn()}<span class="pill" id="mv">Tries: 0</span></div>
+ <p class="center"><b>Match each word with its picture</b></p><div class="mem">${cards.map((c,i)=>`<button class="mc" data-i="${i}" aria-label="Card"><span class="back-face">❓</span></button>`).join("")}</div>`;
  let open=[],tries=0,matched=0,lock=false;
  document.querySelectorAll(".mc").forEach(b=>b.onclick=()=>{
   const i=+b.dataset.i,c=cards[i];if(lock||b.classList.contains("up")||b.classList.contains("done"))return;
-  b.classList.add("up");b.innerHTML=`<span class="${c.big?"lt":"em2"}">${c.t}</span>`;open.push(i);
-  if(c.big)speak(c.t,c.L);
+  b.classList.add("up");b.innerHTML=`<span class="${c.big?"lt":"em2"}" ${c.big?'style="font-size:40px"':""}>${c.t}</span>`;open.push(i);
+  if(c.big)speak(c.t.toLowerCase(),"en");
   if(open.length==2){tries++;$("#mv").textContent="Tries: "+tries;const [a,d]=open.map(k=>cards[k]);lock=true;
    if(a.p==d.p){const bs=[...document.querySelectorAll(".mc")];open.forEach(k=>{bs[k].classList.add("done")});matched++;open=[];lock=false;
-    if(matched==items.length){const s=grade("puz"+day,clamp(1-(tries-items.length)/10,0,1));setTimeout(()=>end("Memory match",s),900)}}
-   else setTimeout(()=>{const bs=[...document.querySelectorAll(".mc")];open.forEach(k=>{bs[k].classList.remove("up");bs[k].innerHTML=`<span class="back-face">❓</span>`});open=[];lock=false},1000)}})}
+    if(matched==items.length){const s=grade(id,clamp(1-(tries-items.length)/10,0,1));setTimeout(()=>{if(curId===id)end("Memory match",s)},900)}}
+   else setTimeout(()=>{const bs=[...document.querySelectorAll(".mc")];open.forEach(k=>{if(bs[k]){bs[k].classList.remove("up");bs[k].innerHTML=`<span class="back-face">❓</span>`}});open=[];lock=false},1000)}})}
 
 /* ---------- Crossword (3x3 ring, picture clues) ---------- */
-/* [across top, across bottom, down left, down right] */
-const CW=[["CAT","WEB","COW","TUB"],["BUS","TEN","BAT","SUN"],["BEE","DOG","BED","EGG"],["CAT","PAN","CUP","TEN"],["TUB","NUT","TEN","BAT"],["CUP","TEN","CAT","PIN"]];
-const WEM={CAT:"🐱",WEB:"🕸️",COW:"🐄",TUB:"🛁",BUS:"🚌",TEN:"🔟",BAT:"🦇",SUN:"☀️",BEE:"🐝",DOG:"🐶",BED:"🛏️",EGG:"🥚",PAN:"🍳",CUP:"☕",NUT:"🥜",PIN:"📌",HEN:"🐔",PIG:"🐷",CAR:"🚗",HAT:"🎩",FOX:"🦊",OWL:"🦉",ANT:"🐜",BOX:"📦",BAG:"👜",KEY:"🔑",MAP:"🗺️",TOY:"🧸",FISH:"🐟",FROG:"🐸",DUCK:"🦆",STAR:"⭐",MOON:"🌙",TREE:"🌳",BOOK:"📖",BALL:"⚽",CAKE:"🎂",LION:"🦁",BIRD:"🐦",SHIP:"🚢",DRUM:"🥁"};
 function runCrossword(){
- const [a1,a2,d1,d2]=CW[wkNum()%CW.length];
+ const id=curId,planned=id!=="more"&&inPlan(id);
+ const [a1,a2,d1,d2]=planned?CW[wkNum()%CW.length]:fresh("cw",CW,1)[0];
  const sol={};[[0,0,0,1,a1],[2,0,0,1,a2],[0,0,1,0,d1],[0,2,1,0,d2]].forEach(([r,c,dr,dc,w])=>{[...w].forEach((ch,i)=>{sol[(r+dr*i)+","+(c+dc*i)]=ch})});
- const grid={};let sel=null,wrong=0;
+ const grid={};let sel=null,wrong=0,note="Fill in the name of each picture";
  const clue=(n,arrow,w)=>`<span class="cl"><b>${n}</b> ${arrow} ${WEM[w]}</span>`;
  const draw=()=>{let h="";
   for(let r=0;r<3;r++)for(let c=0;c<3;c++){const k=r+","+c;
    if(!sol[k])h+=`<div class="xc blk"></div>`;
    else h+=`<button class="xc ${sel==k?"sel":""}" data-k="${k}">${(k=="0,0"?"<i>1</i>":k=="0,2"?"<i>2</i>":k=="2,0"?"<i>3</i>":"")}${grid[k]||""}</button>`}
-  $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button><span class="pill">⭐ ${bal()}</span></div>
-  <p class="center"><b>Fill in the name of each picture</b></p>
+  $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button>${skipBtn()}<span class="pill">⭐ ${bal()}</span></div>
+  <p class="center"><b>${note}</b></p>
   <div class="clues">${clue(1,"➡️",a1)}${clue(3,"➡️",a2)}${clue(1,"⬇️",d1)}${clue(2,"⬇️",d2)}</div>
   <div class="xg">${h}</div>
   <div class="kb">${"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(l=>`<button data-l="${l}">${l}</button>`).join("")}</div>`;
-  document.querySelectorAll(".xc[data-k]").forEach(b=>b.onclick=()=>{sel=b.dataset.k;draw()});
+  document.querySelectorAll(".xc[data-k]").forEach(b=>b.onclick=()=>{sel=b.dataset.k;note="Fill in the name of each picture";draw()});
   document.querySelectorAll(".kb button").forEach(b=>b.onclick=()=>{
-   if(!sel)return($("#app").querySelector(".center b").textContent="Tap a square first");
-   if(sol[sel]==b.dataset.l){grid[sel]=b.dataset.l;sel=null;
-    if(Object.keys(sol).every(k=>grid[k])){const s=grade("puz"+day,clamp(1-wrong/8,0,1));return end("Crossword",s)}
+   if(!sel){note="Tap a square first";return draw()}
+   if(sol[sel]==b.dataset.l){grid[sel]=b.dataset.l;sel=null;note="Fill in the name of each picture";
+    if(Object.keys(sol).every(k=>grid[k])){const s=grade(id,clamp(1-wrong/8,0,1));return end("Crossword",s)}
     draw()}
    else{wrong++;const cell=document.querySelector(`.xc[data-k="${sel}"]`);cell.classList.add("bad");setTimeout(()=>cell.classList.remove("bad"),500)}})};
  draw()}
 
 /* ---------- Word search ---------- */
 function runWordSearch(){
- const N=6,bank=["CAT","DOG","SUN","BEE","HEN","PIG","BUS","CAR","HAT","EGG","FOX","OWL","ANT","BAT","COW","BED","CUP","KEY","MAP","TOY","BOX","BAG","FISH","FROG","DUCK","STAR","MOON","TREE","BOOK","BALL","CAKE","LION","BIRD","SHIP","DRUM"];
+ const id=curId,N=6,bank=["CAT","DOG","SUN","BEE","HEN","PIG","BUS","CAR","HAT","EGG","FOX","OWL","ANT","BAT","COW","BED","CUP","KEY","MAP","BOX","BAG","FISH","FROG","DUCK","STAR","MOON","TREE","BOOK","BALL","CAKE","LION","BIRD","SHIP","DRUM"];
  let words,grid;
  for(let tryN=0;tryN<300;tryN++){
-  words=shuf(bank).slice(0,4);grid=Array.from({length:N},()=>Array(N).fill(""));let ok=true;
+  words=fresh("ws",bank,4);grid=Array.from({length:N},()=>Array(N).fill(""));let ok=true;
   for(const w of words){let placed=false;
    for(let t=0;t<80&&!placed;t++){const h=R(2)==0,r=R(h?N:N-w.length+1),c=R(h?N-w.length+1:N);let fit=true;
     for(let i=0;i<w.length;i++){const g=grid[h?r:r+i][h?c+i:c];if(g&&g!==w[i]){fit=false;break}}
@@ -689,9 +861,9 @@ function runWordSearch(){
  for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(!grid[r][c])grid[r][c]=A[R(26)];
  const found=new Set(),foundCells=new Set();let first=null,wrong=0;
  const draw=()=>{
-  $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button><span class="pill">${found.size} of ${words.length}</span></div>
+  $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button>${skipBtn()}<span class="pill">${found.size} of ${words.length}</span></div>
   <p class="center"><b>Tap the first letter, then the last letter of a word</b></p>
-  <div class="wl">${words.map(w=>`<span class="${found.has(w)?"fd":""}">${WEM[w]} ${w}</span>`).join("")}</div>
+  <div class="wl">${words.map(w=>`<span class="${found.has(w)?"fd":""}">${WEM[w]||""} ${w}</span>`).join("")}</div>
   <div class="ws">${grid.map((row,r)=>row.map((ch,c)=>`<button class="wc ${foundCells.has(r+","+c)?"fd":""} ${first&&first[0]==r&&first[1]==c?"sel":""}" data-r="${r}" data-c="${c}">${ch}</button>`).join("")).join("")}</div>`;
   document.querySelectorAll(".wc").forEach(b=>b.onclick=()=>{
    const r=+b.dataset.r,c=+b.dataset.c;
@@ -701,12 +873,37 @@ function runWordSearch(){
    const cells=[];const dr=Math.sign(r-r0),dc=Math.sign(c-c0),len=Math.max(Math.abs(r-r0),Math.abs(c-c0))+1;
    for(let i=0;i<len;i++)cells.push([r0+dr*i,c0+dc*i]);
    const s=cells.map(([a,b])=>grid[a][b]).join(""),w=words.find(x=>!found.has(x)&&(x===s||x===[...s].reverse().join("")));
-   if(w){found.add(w);cells.forEach(([a,b])=>foundCells.add(a+","+b));speak(w,"en");
-    if(found.size==words.length){const st=grade("puz"+day,clamp(1-wrong/6,0,1));draw();return setTimeout(()=>end("Word search",st),900)}}
+   if(w){found.add(w);cells.forEach(([a,b])=>foundCells.add(a+","+b));speak(w.toLowerCase(),"en");
+    if(found.size==words.length){const st=grade(id,clamp(1-wrong/6,0,1));draw();return setTimeout(()=>{if(curId===id)end("Word search",st)},900)}}
    else wrong++;
    draw()})};
  draw()}
 
+/* ---------- Word guess ---------- */
+function runWordGuess(){
+ const id=curId,items=fresh("wg",WG,4);let i=0,wrong=0,hints=0;
+ const round=()=>{
+  if(curId!==id)return;
+  if(i>=items.length){document.onkeydown=null;const s=grade(id,clamp(1-(wrong+hints)/12,0,1));return end("Word guess",s)}
+  const [w,clue,pic]=items[i];let done=false,usedPic=false;const used={};
+  $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button>${skipBtn()}<span class="pill">Word ${i+1} of ${items.length}</span></div>
+  <div class="bar"><i style="width:${i/items.length*100}%"></i></div>
+  <div class="q"><p class="wgc">${clue}</p><p><button class="speak" id="wgs" style="width:56px;height:56px;font-size:26px" aria-label="Hear the clue">🔊</button> <button class="back" id="wgp">🖼️ Show a picture</button></p>
+  <div class="pichint" id="wgi"></div>
+  <div class="blanks" id="bls">${[...w].map((c,k)=>`<span class="bl" id="bl${k}"></span>`).join("")}</div><div class="fb" id="fb" aria-live="polite"></div></div>
+  <div class="kb">${"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(l=>`<button data-l="${l}">${l}</button>`).join("")}</div>`;
+  const hear=()=>speak(clue,"en");
+  $("#wgs").onclick=hear;if(S.autoread)hear();
+  $("#wgp").onclick=()=>{if(!usedPic){usedPic=true;hints++}$("#wgi").textContent=pic};
+  const press=L=>{
+   if(done||used[L])return;used[L]=1;
+   const btn=document.querySelector(`.kb button[data-l="${L}"]`);if(!btn)return;btn.disabled=true;
+   if(w.includes(L)){btn.classList.add("good");[...w].forEach((c,k)=>{if(c==L)$("#bl"+k).textContent=L});$("#fb").textContent="";
+    if([...w].every((c,k)=>$("#bl"+k).textContent)){done=true;document.onkeydown=null;speak(w.toLowerCase(),"en");$("#fb").className="fb g";$("#fb").textContent="🎉 "+w+"!";setTimeout(()=>{if(curId===id){i++;round()}},1600)}}
+   else{wrong++;btn.classList.add("bad");$("#fb").className="fb r";$("#fb").textContent="No "+L+" in this word. Try another letter."}};
+  document.querySelectorAll(".kb button").forEach(b=>b.onclick=()=>press(b.dataset.l));
+  document.onkeydown=e=>{if(/^[a-z]$/i.test(e.key))press(e.key.toUpperCase())}};
+ round()}
 
 const pad2=n=>String(n).padStart(2,"0");
 const clockWords=(h,m)=>m==0?`${h} o'clock`:m==30?`half past ${h}`:m==15?`quarter past ${h}`:m==45?`quarter to ${h%12+1}`:`${h}:${pad2(m)}`;
@@ -746,7 +943,7 @@ SCI.clock={icon:"🕒",title:"Reading the clock",blurb:"How do we tell the time?
  quiz(){const out=[];
   shuf(["o","o","h","h","q"]).forEach(k=>{const h=1+R(12),m=k=="o"?0:k=="h"?30:pick([15,45]),ans=clockWords(h,m),d=new Set();
    while(d.size<2){const w=clockWords(Math.random()<.5?h:1+R(12),pick([0,15,30,45]));if(w!==ans)d.add(w)}
-   out.push({html:`<p>What time does the clock show?</p>${clockStatic(h,m)}`,o:shuf([ans,...d]),a:ans,say:[["What time does the clock show?","en"]]})});
+   out.push({html:`<p>What time does the clock show?</p>${clockStatic(h,m)}`,o:shuf([ans,...d]),a:ans,say:[["What time does the clock show?","en"]],why:()=>clockWhy(h,m)})});
   return out}};
 
 /* ---------- Rewards ---------- */

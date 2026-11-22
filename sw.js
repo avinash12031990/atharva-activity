@@ -1,7 +1,7 @@
 /* Atharva Activity service worker: makes the app work offline.
    Pages are served from the cache first, and refreshed in the background,
    so an update appears the next time the app is opened. */
-const V = "atharva-v1";
+const V = "atharva-v2";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon-maskable-512.png"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(V).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
