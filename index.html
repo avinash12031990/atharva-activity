@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atharva Activity</title>
+<style>
+:root{--bg:#fff6e0;--card:#fff;--ink:#2b2a4c;--soft:#6b6a8c;--a:#ff7a3d;--b:#2bb3a3;--c:#6c5ce7;--d:#f4b400;--ok:#2fb86b;--bad:#e5484d;--line:#e8dcc0;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1f1d33;--card:#2c2a47;--ink:#f5f2ff;--soft:#b5b2d6;--line:#44416a}}
+:root[data-theme="dark"]{--bg:#1f1d33;--card:#2c2a47;--ink:#f5f2ff;--soft:#b5b2d6;--line:#44416a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;font-size:20px;min-height:100vh;-webkit-tap-highlight-color:transparent;user-select:none}
+#app{max-width:900px;margin:0 auto;padding:16px}
+button{font:inherit;color:inherit;cursor:pointer;border:0}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+h1{font-size:30px;margin:0}
+.pill{background:var(--card);border:3px solid var(--line);border-radius:999px;padding:6px 16px;font-weight:700}
+.days{display:flex;gap:8px;margin:14px 0;overflow-x:auto}
+.day{background:var(--card);border:3px solid var(--line);border-radius:14px;padding:8px 14px;font-weight:700;flex:0 0 auto}
+.day.on{background:var(--c);color:#fff;border-color:var(--c)}
+.day.done::after{content:" ✓"}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.tile{border-radius:22px;padding:22px;text-align:left;color:#fff;min-height:140px;box-shadow:0 5px 0 rgba(0,0,0,.18);position:relative}
+.tile:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.tile b{font-size:26px;display:block}.tile span{font-size:17px;opacity:.95}
+.tile .e{font-size:44px;display:block;margin-bottom:6px}
+.tile.done::after{content:"✅";position:absolute;right:16px;top:12px;font-size:28px}
+.t1{background:var(--a)}.t2{background:var(--b)}.t3{background:var(--c)}.t4{background:#d98a00}
+.shop{margin-top:18px;width:100%;background:var(--card);border:3px dashed var(--d);border-radius:20px;padding:16px;font-weight:700;font-size:22px}
+.back{background:var(--card);border:3px solid var(--line);border-radius:14px;padding:8px 16px;font-weight:700}
+.bar{height:14px;background:var(--line);border-radius:9px;margin:12px 0;overflow:hidden}.bar i{display:block;height:100%;background:var(--ok);transition:width .3s}
+.q{background:var(--card);border-radius:24px;padding:24px;text-align:center;margin-top:10px}
+.big{font-size:56px;font-weight:800;margin:10px 0;line-height:1.2}
+.opts{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.opt{background:var(--bg);border:4px solid var(--line);border-radius:20px;min-width:120px;min-height:88px;padding:10px 22px;font-size:40px;font-weight:800}
+.opt.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.opt.bad{background:var(--bad);color:#fff;border-color:var(--bad);animation:sh .3s}
+@keyframes sh{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.coin{display:inline-flex;align-items:center;justify-content:center;width:62px;height:62px;border-radius:50%;background:radial-gradient(#ffe27a,#d9a400);border:4px solid #b88900;color:#5a4300;font-weight:800;font-size:22px;margin:4px}
+.coin.n{border-radius:10px;width:96px;height:56px;background:#9ad1a0;border-color:#5aa56a;color:#134d1f}
+.speak{background:var(--d);border-radius:50%;width:56px;height:56px;font-size:28px}
+.card{display:flex;align-items:center;gap:16px;background:var(--card);border-radius:20px;padding:14px 18px;margin:10px 0}
+.card .em{font-size:52px}.card .w{font-size:40px;font-weight:800}.card small{display:block;font-size:18px;color:var(--soft)}
+.go{background:var(--ok);color:#fff;border-radius:20px;padding:16px 34px;font-size:26px;font-weight:800;margin-top:14px;box-shadow:0 5px 0 rgba(0,0,0,.2)}
+.board{display:grid;grid-template-columns:repeat(8,1fr);width:min(100%,560px);aspect-ratio:1;margin:12px auto;border:4px solid var(--ink);border-radius:8px;overflow:hidden}
+.sq{border:0;font-size:min(7vw,44px);padding:0;display:flex;align-items:center;justify-content:center;background:#f0d9b5;color:#222}
+.sq.dk{background:#b58863}.sq.ok{background:var(--ok)}.sq.bad{background:var(--bad)}.sq.pc{font-size:min(8vw,52px)}
+.sud{display:grid;grid-template-columns:repeat(4,1fr);width:min(100%,360px);margin:12px auto;border:4px solid var(--ink)}
+.sc{aspect-ratio:1;background:var(--card);border:1px solid var(--line);font-size:44px;font-weight:800;display:flex;align-items:center;justify-content:center;border-radius:0}
+.sc.g{background:var(--line)}.sc.sel{outline:5px solid var(--c);outline-offset:-5px}.sc.r2{border-right:4px solid var(--ink)}.sc.b2{border-bottom:4px solid var(--ink)}
+.sc.bad{background:var(--bad);color:#fff}
+.sc.cl0{color:#ff7a3d}.sc.cl1{color:#2bb3a3}.sc.cl2{color:#6c5ce7}.sc.cl3{color:#d98a00}
+.rw{display:flex;align-items:center;gap:14px;background:var(--card);border-radius:20px;padding:14px 18px;margin:10px 0}
+.rw .em{font-size:44px}.rw div{flex:1}.rw b{font-size:24px}
+.buy{background:var(--d);border-radius:14px;padding:12px 18px;font-weight:800;font-size:20px}.buy[disabled]{opacity:.4}
+.center{text-align:center}.note{color:var(--soft);font-size:16px}
+.start{display:block;width:100%;margin:6px 0 14px;background:var(--ok);color:#fff;border-radius:22px;padding:18px;font-size:28px;font-weight:800;box-shadow:0 5px 0 rgba(0,0,0,.2)}
+.start:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.2)}
+.t5{background:#e0457b}.t6{background:#1f8fd6}
+.stage{background:var(--card);border-radius:24px;padding:8px;margin-top:10px}
+.stage svg{width:100%;height:auto;max-height:56vh;display:block}
+.cap{font-size:26px;font-weight:700;text-align:center;min-height:100px;margin:10px 4px;line-height:1.3}
+.ctl{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap}
+.ctl button{background:var(--card);border:3px solid var(--line);border-radius:16px;min-width:72px;min-height:60px;font-size:28px}
+.tryz{display:none;text-align:center;margin:8px 0}
+.tryz.on{display:block}
+.tryz input[type=range]{width:min(100%,520px);height:44px}
+.tryz button{background:var(--d);border-radius:16px;padding:12px 26px;font-size:26px;font-weight:800}
+.hi{filter:drop-shadow(0 0 7px #ff7a3d);animation:pu 1s infinite alternate}
+@keyframes pu{to{opacity:.72}}
+.sci{display:flex;align-items:center;gap:14px;background:var(--card);border-radius:20px;padding:16px 18px;margin:10px 0;width:100%;text-align:left}
+.sci .em{font-size:48px}.sci b{font-size:24px}.sci small{display:block;color:var(--soft);font-size:17px}
+.txt{width:100%;font:inherit;font-size:26px;padding:14px;border-radius:16px;border:3px solid var(--line);background:var(--card);color:var(--ink);-webkit-user-select:text;user-select:text;margin:12px 0}
+.mic{width:130px;height:130px;border-radius:50%;background:var(--bad);color:#fff;font-size:56px;box-shadow:0 6px 0 rgba(0,0,0,.2)}
+.mic.rec{animation:pu .5s infinite alternate}
+.lang{display:flex;gap:10px;justify-content:center;margin:10px 0}
+.lang button{background:var(--card);border:3px solid var(--line);border-radius:999px;padding:8px 18px;font-weight:700}
+.lang button.on{background:var(--c);color:#fff;border-color:var(--c)}
+.t7{background:#8e44ad}
+.dpad{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:8px}.dpad div{display:flex;gap:6px}
+.dpad button{width:78px;height:64px;border-radius:16px;background:var(--card);border:3px solid var(--line);font-size:30px}
+.mem{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:640px;margin:10px auto}
+.mc{aspect-ratio:1/1.1;border-radius:18px;background:var(--c);color:#fff;font-size:44px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 0 rgba(0,0,0,.2)}
+.mc.up{background:var(--card);color:var(--ink)}.mc.done{background:var(--ok);color:#fff;opacity:.85}
+.mc .lt{font-size:56px;font-weight:800}.mc .em2{font-size:52px}
+.xg{display:grid;grid-template-columns:repeat(3,92px);gap:6px;justify-content:center;margin:12px auto}
+.xc{width:92px;height:92px;border-radius:10px;background:var(--card);border:3px solid var(--ink);font-size:48px;font-weight:800;position:relative;color:var(--ink)}
+.xc i{position:absolute;left:6px;top:2px;font-size:16px;font-style:normal;color:var(--soft)}
+.xc.blk{background:var(--ink);border-color:var(--ink)}.xc.sel{outline:5px solid var(--c);outline-offset:-5px}.xc.bad{background:var(--bad);color:#fff}
+.clues{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;font-size:34px}.cl{background:var(--card);border-radius:14px;padding:4px 12px}
+.kb{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:640px;margin:8px auto}
+.kb button{width:56px;height:60px;border-radius:12px;background:var(--card);border:3px solid var(--line);font-size:28px;font-weight:800;color:var(--ink)}
+.ws{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;max-width:460px;margin:12px auto}
+.wc{aspect-ratio:1;border-radius:12px;background:var(--card);border:3px solid var(--line);font-size:34px;font-weight:800;color:var(--ink)}
+.wc.sel{background:var(--d);border-color:var(--d)}.wc.fd{background:var(--ok);color:#fff;border-color:var(--ok)}
+.wl{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;font-size:26px;font-weight:700}
+.wl span{background:var(--card);padding:6px 14px;border-radius:14px}.wl .fd{text-decoration:line-through;opacity:.5}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#fff6e0">
+<link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+<div id="app"></div>
+<script>
+const $=s=>document.querySelector(s), R=n=>Math.floor(Math.random()*n), pick=a=>a[R(a.length)];
+const shuf=a=>a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(p=>p[1]);
+const INIT={earned:0,spent:0,streak:0,last:"",done:{},bought:[],autoread:true,mazeLevel:0};
+let S;try{S=Object.assign({},INIT,JSON.parse(localStorage.getItem("daily1")||"{}"))}catch(e){S=Object.assign({},INIT)}
+const save=()=>{try{localStorage.setItem("daily1",JSON.stringify(S))}catch(e){}};
+const today=()=>new Date().toISOString().slice(0,10);
+const bal=()=>S.earned-S.spent;
+let raf=0,chain=0,speakOn=true,PL=null;
+function stopScene(){PL=null;cancelAnimationFrame(raf);clearTimeout(chain);try{speechSynthesis.cancel()}catch(e){}}
+const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+let day=new Date().getDay()||7;
+const PLAN={
+1:{math:"add20",game:"pawn",words:"en1",puz:"maze",ex:"sci"},
+2:{math:"sub20",game:"sudoku",words:"hi1",puz:"memory",ex:"coins"},
+3:{math:"pattern",game:"rook",words:"kn1",puz:"crossword",ex:"sci"},
+4:{math:"add2",game:"sudoku",words:"en2",puz:"clock",ex:"coins"},
+5:{math:"sub2",game:"bishop",words:"hi2",puz:"wordsearch",ex:"sci"},
+6:{math:"mixed",game:"sudoku",words:"kn2",puz:"maze",ex:"coins"},
+7:{math:"mixed",game:"chessmix",words:"review",puz:"memory",ex:"jars"}};
+const WORDS={
+en1:[["gigantic","very, very big","🐘"],["tiny","very small","🐜"],["curious","wants to know more","🔍"]],
+en2:[["brave","not afraid","🦁"],["gentle","soft and kind","🐑"],["delicious","tastes very good","🍰"]]};
+/* letter, sound, example word, word in English letters, meaning, picture */
+const LET={
+hi1:[["अ","a","अजगर","ajgar","python snake","🐍"],["आ","aa","आम","aam","mango","🥭"],["इ","i","इमारत","imaarat","building","🏢"],["ई","ee","ईंट","eent","brick","🧱"]],
+hi2:[["उ","u","उल्लू","ullu","owl","🦉"],["ऊ","oo","ऊँट","oont","camel","🐪"],["ए","ae","एक","ek","one","1️⃣"],["ओ","o","ओस","os","dew drops","💧"]],
+kn1:[["ಅ","a","ಅಮ್ಮ","amma","mother","👩"],["ಆ","aa","ಆನೆ","aane","elephant","🐘"],["ಇ","i","ಇಲಿ","ili","mouse","🐭"],["ಈ","ee","ಈರುಳ್ಳಿ","eerulli","onion","🧅"]],
+kn2:[["ಉ","u","ಉಂಗುರ","ungura","ring","💍"],["ಊ","oo","ಊಟ","oota","meal","🍛"],["ಎ","e","ಎಲೆ","ele","leaf","🍃"],["ಏ","ae","ಏಣಿ","eni","ladder","🪜"]]};
+const HINT={a:"a as in about",aa:"aa as in car",i:"i as in sit",ee:"ee as in see",u:"u as in put",oo:"oo as in moon",e:"e as in egg",ae:"ay as in play",o:"o as in go"};
+const LANG={en:"en-IN",hi:"hi-IN",kn:"kn-IN"};
+const REWARDS=[["🍽️","Choose tonight's dinner",30],["🌳","Extra park visit",40],["🎲","Family game night",50],["🎬","Pick the movie",60],["🍦","Ice cream outing",70]];
+const POOL=["🐶","🌞","📚","🚗","🍎","🐘"];
+
+function speak(t,l){try{if(window.AndroidTTS){AndroidTTS.speak(String(t),LANG[l]||"en-IN");return}const u=new SpeechSynthesisUtterance(t);u.lang=LANG[l]||"en-IN";u.rate=.8;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
+function star(n){S.earned+=n;save()}
+function finishAct(id){const t=today();(S.done[t]=S.done[t]||[]);if(!S.done[t].includes(id))S.done[t].push(id);
+ if(S.last!==t){const y=new Date(Date.now()-864e5).toISOString().slice(0,10);S.streak=S.last===y?S.streak+1:1;S.last=t}save()}
+const isDone=id=>(S.done[today()]||[]).includes(id);
+function opts(a,lo=0){const s=new Set([a]);while(s.size<3){const v=a+pick([-10,-2,-1,1,2,10]);if(v>=lo)s.add(v)}return shuf([...s])}
+
+/* ---------- Day plan and chaining ---------- */
+const wkNum=()=>Math.floor((Date.now()/864e5+3)/7);
+const PZNAME={maze:"Maze",memory:"Memory match",crossword:"Crossword",clock:"Reading the clock",wordsearch:"Word search"};
+function acts(){const p=PLAN[day];return [
+ {id:"math"+day,name:"Number fun",run:runMath},
+ {id:"game"+day,name:p.game=="sudoku"?"Mini sudoku":"Chess",run:runGame},
+ {id:"words"+day,name:"Words and letters",run:runWords},
+ {id:"puz"+day,name:PZNAME[p.puz],run:runPuz},
+ p.ex=="sci"?{id:"sci"+day,name:"How things work",run:()=>runSci(feat())}:{id:"money"+day,name:p.ex=="jars"?"Three jars":"Coin shop",run:runMoney}]}
+const nextAct=()=>acts().find(a=>!isDone(a.id));
+function startDay(){(nextAct()||acts()[0]).run()}
+function runPuz(){({maze:runMaze,memory:runMemory,crossword:runCrossword,clock:()=>runSci("clock","puz"+day),wordsearch:runWordSearch})[PLAN[day].puz]()}
+
+/* ---------- Home ---------- */
+function home(){
+ stopScene();
+ const p=PLAN[day];
+ const tile=(cls,e,t,sub,fn,id)=>`<button class="tile ${cls} ${id&&isDone(id)?"done":""}" onclick="${fn}"><span class="e">${e}</span><b>${t}</b><span>${sub}</span></button>`;
+ const gname={pawn:"Chess: the pawn",rook:"Chess: the rook",bishop:"Chess: the bishop",sudoku:"Mini sudoku",chessmix:"Chess practice"}[p.game];
+ const wk=p.words;
+ const wl=wk=="review"?"Word review":wk[0]=="e"?"English words":wk[0]=="h"?"Hindi letters":"Kannada letters";
+ const wsub=wk=="review"?"Letters and words from this week":wk[0]=="e"?"3 new words today":"4 new letters today";
+ const pz={maze:["🐭","Maze","Help the mouse find the cheese"],memory:["🃏","Memory match","Find the pairs"],crossword:["✏️","Crossword","Fill in the words"],clock:["🕒","Reading the clock","Learn to tell the time"],wordsearch:["🔎","Word search","Find the hidden words"]}[p.puz];
+ const left=acts().filter(a=>!isDone(a.id)).length;
+ $("#app").innerHTML=`<div class="top"><h1>🌟 Atharva Activity</h1><div><span class="pill">⭐ ${bal()}</span> <span class="pill">🔥 ${S.streak}</span></div></div>
+ <div class="days">${[1,2,3,4,5,6,7].map(d=>`<button class="day ${d==day?"on":""}" onclick="day=${d};home()">${DAYS[d]}</button>`).join("")}</div>
+ <button class="start" onclick="startDay()">${left?"▶ Start today's adventure":"🏆 All done! Play again"}</button>
+ <div class="tiles">
+ ${tile("t1","🔢","Number fun",{add20:"Adding to 20",sub20:"Taking away within 20",pattern:"What comes next?",add2:"Adding bigger numbers",sub2:"Taking away bigger numbers",mixed:"Mixed challenge"}[p.math],"runMath()","math"+day)}
+ ${tile("t2",p.game=="sudoku"?"🧩":"♟️",gname,p.game=="sudoku"?"Fill every row, column and box":p.game=="chessmix"?"Practice all the pieces":"Learn how it moves","runGame()","game"+day)}
+ ${tile("t3","📖",wl,wsub,"runWords()","words"+day)}
+ ${tile("t7",pz[0],pz[1],pz[2],"runPuz()","puz"+day)}
+ ${p.ex=="sci"?tile("t6","🔬","How things work","Watch and try it yourself","sciMenu()","sci"+day):tile("t4",p.ex=="jars"?"🐷":"🪙",p.ex=="jars"?"Three jars":"Coin shop",p.ex=="jars"?"Save, spend or share?":"Count coins and shop","runMoney()","money"+day)}
+ ${p.ex=="sci"?"":tile("t6","🔬","How things work","Watch and try it yourself","sciMenu()","")}
+ ${tile("t5","❓","Ask a question","Ask about anything and find a video","runAsk()","")}
+ </div>
+ <button class="shop" onclick="shop()">🎁 Reward shop · ⭐ ${bal()} stars to spend</button>
+ <p class="note center">Finishing an activity earns 1 to 3 ⭐ (the first time each day). Stars are never taken away.</p>
+ <p class="center"><button class="back" onclick="parents()">⚙️ Parents</button></p>`;
+}
+
+/* ---------- Parents ---------- */
+function gateThen(then){
+ const a=6+R(4),b=6+R(4);
+ $("#app").innerHTML=`<div class="q center"><h2>👨‍👩‍👦 Grown-ups only</h2><p>What is <b>${a} × ${b}</b>?</p><input class="txt" id="gt" type="number" inputmode="numeric" style="max-width:200px;text-align:center"><br><button class="go" id="gk">OK</button> <button class="back" onclick="home()">Cancel</button><p class="note" id="gn2"></p></div>`;
+ $("#gk").onclick=()=>{if(+$("#gt").value!==a*b)return($("#gn2").textContent="Not quite. Try again.");then()}}
+const parents=()=>gateThen(parentsPanel);
+function parentsPanel(note){
+ $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button></div><h1>⚙️ Parents</h1>
+ <div class="q" style="text-align:left"><p class="note">${note||""}</p>
+ <h3>Stars: ⭐ ${bal()}</h3>
+ <p>Set the star balance:</p><input class="txt" id="sb2" type="number" inputmode="numeric" value="${bal()}"><button class="go" id="sbb">Set stars</button>
+ <h3>Read questions aloud automatically</h3><button class="back" id="ar">${S.autoread?"On (tap to turn off)":"Off (tap to turn on)"}</button>
+ <h3>Back up progress</h3><p class="note">Copy this code and keep it somewhere safe, for example in a note. Use it to restore if the stars ever reset.</p>
+ <textarea class="txt" id="bk" rows="3" readonly style="font-size:14px">${JSON.stringify(S).replace(/&/g,"&amp;").replace(/</g,"&lt;")}</textarea>
+ <button class="back" id="cp">Copy code</button> <button class="back" id="dl">Download file</button>
+ <h3>Restore progress</h3><textarea class="txt" id="rs" rows="3" placeholder="Paste the backup code here" style="font-size:14px"></textarea><button class="back" id="rb">Restore</button></div>`;
+ $("#sbb").onclick=()=>{const n=Math.max(0,Math.floor(+$("#sb2").value));if(isNaN(n))return;S.earned=n+S.spent;save();parentsPanel("Stars set to "+n+".")};
+ $("#ar").onclick=()=>{S.autoread=!S.autoread;save();parentsPanel("")};
+ $("#cp").onclick=()=>{const t=$("#bk");t.select();let ok=false;try{ok=document.execCommand("copy")}catch(e){}try{navigator.clipboard.writeText(t.value);ok=true}catch(e){}$("#cp").textContent=ok?"Copied ✓":"Select and copy the code"};
+ $("#dl").onclick=()=>{try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:"application/json"}));a.download="atharva-progress.json";document.body.appendChild(a);a.click();a.remove()}catch(e){}};
+ $("#rb").onclick=()=>{try{const o=JSON.parse($("#rs").value);if(typeof o.earned!="number"||typeof o.spent!="number")throw 0;S=Object.assign({},INIT,o);save();parentsPanel("Progress restored.")}catch(e){parentsPanel("That code did not work. Paste the whole code.")}};
+}
+
+/* ---------- Generic choice quiz ---------- */
+/* Stars: 1 for finishing, +1 at 60% right first time, +1 at 90%. Max 3 per activity, only the first time each day. */
+function grade(id,frac){
+ if(isDone(id)){finishAct(id);return 0}
+ const n=1+(frac>=.6?1:0)+(frac>=.9?1:0);star(n);finishAct(id);return n}
+const sayClean=h=>{const d=document.createElement("div");d.innerHTML=h.replace(/<\/(p|div|h\d)>/g," ");d.querySelectorAll("button").forEach(b=>b.remove());
+ return d.textContent.replace(/₹\s*(\d+)/g,"$1 rupees").replace(/=\s*\?/g," equals what").replace(/,\s*\?/g,", what").replace(/−/g," minus ").replace(/\+/g," plus ").replace(/×/g," times ").replace(/=/g," equals ").replace(/\s+/g," ").trim()};
+function speakSeq(chunks){
+ try{speechSynthesis.cancel()}catch(e){}
+ if(window.AndroidTTS){speak(chunks[0][0],chunks[0][1]);return}
+ chunks.forEach(([t,l])=>{try{const u=new SpeechSynthesisUtterance(t);u.lang=LANG[l]||"en-IN";u.rate=.85;speechSynthesis.speak(u)}catch(e){}})}
+function quiz(qs,id,title){
+ let i=0,got=0,tries=0;
+ const show=()=>{
+  if(i>=qs.length){const n=grade(id,got/qs.length);return end(title,n)}
+  const q=qs[i];tries=0;
+  const chunks=q.say||[[sayClean(q.html),"en"]];
+  $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button><span><button class="back" id="qs" aria-label="Hear the question">🔊 Hear</button> <button class="back" id="qa" aria-label="Read questions automatically">${S.autoread?"Auto: on":"Auto: off"}</button></span><span class="pill">⭐ ${bal()}</span></div>
+  <div class="bar"><i style="width:${i/qs.length*100}%"></i></div>
+  <div class="q">${q.html}<div class="opts">${q.o.map((o,k)=>`<button class="opt" data-k="${k}">${o}</button>`).join("")}</div></div>`;
+  $("#qs").onclick=()=>speakSeq(chunks);
+  $("#qa").onclick=()=>{S.autoread=!S.autoread;save();$("#qa").textContent=S.autoread?"Auto: on":"Auto: off";if(S.autoread)speakSeq(chunks)};
+  if(S.autoread)speakSeq(chunks);
+  document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+   const o=q.o[b.dataset.k];
+   if(String(o)===String(q.a)){b.classList.add("ok");if(!tries)got++;document.querySelectorAll(".opt").forEach(x=>x.disabled=true);setTimeout(()=>{i++;show()},800)}
+   else{tries++;b.classList.add("bad");b.disabled=true}});
+ };show();
+}
+function end(title,n){
+ clearTimeout(chain);
+ const nx=nextAct();
+ const msg=n>0?`You earned <b>${n} ⭐</b>`:`Great practice! Stars are given the first time each day.`;
+ $("#app").innerHTML=`<div class="q center"><div class="big">🎉 Great job!</div><p>${title} complete. ${msg}</p>
+ ${nx?`<p>Up next: <b>${nx.name}</b></p><button class="go" id="gn">Start now</button> <button class="back" onclick="home()">Home</button>`:`<p>🏆 All done for today! 🔥 ${S.streak} day streak</p><button class="go" onclick="home()">Back home</button>`}</div>`;
+ if(nx){$("#gn").onclick=()=>{clearTimeout(chain);nx.run()};chain=setTimeout(()=>{if(document.getElementById("gn"))nx.run()},3500)}
+}
+
+/* ---------- Math ---------- */
+function mq(t){
+ let a,b,h;
+ if(t=="add20"){a=1+R(10);b=1+R(10);return {html:`<div class="big">${a} + ${b} = ?</div>`,o:opts(a+b),a:a+b}}
+ if(t=="sub20"){a=5+R(16);b=1+R(a-1);return {html:`<div class="big">${a} − ${b} = ?</div>`,o:opts(a-b),a:a-b}}
+ if(t=="pattern"){const st=pick([1,2,5,10]),s=1+R(5)*(st==10?1:1);const sq=[0,1,2,3].map(k=>s+st*k);const n=s+st*4;return {html:`<p>What comes next?</p><div class="big">${sq.join(", ")}, ?</div>`,o:opts(n,0),a:n}}
+ if(t=="add2"){let t1,t2,o1,o2;do{t1=1+R(8);t2=1+R(8);o1=R(9);o2=R(9)}while(t1+t2>9||o1+o2>9);a=t1*10+o1;b=t2*10+o2;return {html:`<div class="big">${a} + ${b} = ?</div>`,o:opts(a+b),a:a+b}}
+ if(t=="sub2"){let t1,t2,o1,o2;do{t1=2+R(8);t2=1+R(t1);o1=R(10);o2=R(o1+1)}while(t1*10+o1<=t2*10+o2);a=t1*10+o1;b=t2*10+o2;return {html:`<div class="big">${a} − ${b} = ?</div>`,o:opts(a-b),a:a-b}}
+ return mq(pick(["add20","sub20","pattern","add2","sub2"]))}
+function runMath(){const t=PLAN[day].math;quiz(Array.from({length:5},()=>mq(t)),"math"+day,"Number fun")}
+
+/* ---------- Money ---------- */
+function runJars(){
+ const sc=[["You want a big toy that costs ₹500. Which jar helps you get it?","Save"],
+ ["It is hot and you want an ice cream today. Which jar?","Spend"],
+ ["A friend is sad. You buy them a small gift. Which jar?","Share"],
+ ["You want a bicycle for your next birthday. Which jar?","Save"],
+ ["Some people need help and your school is collecting. Which jar?","Share"],
+ ["You see a balloon at the fair and want it right now. Which jar?","Spend"]];
+ const lab={Save:"🐷 Save",Spend:"🛍️ Spend",Share:"🎁 Share"};
+ const qs=shuf(sc).slice(0,5).map(x=>({html:`<p>${x[0]}</p>`,o:["🐷 Save","🛍️ Spend","🎁 Share"],a:lab[x[1]]}));
+ quiz(qs,"money"+day,"Three jars")}
+function runMoney(){
+ if(PLAN[day].ex=="jars")return runJars();
+ const qs=[];
+ for(let k=0;k<5;k++){
+  if(k%2==0){const n=2+R(3),cs=Array.from({length:n},()=>pick([1,2,5,10]));const tot=cs.reduce((x,y)=>x+y,0);
+   qs.push({html:`<p>How much money is this?</p><div>${cs.map(c=>`<span class="coin ${c==10&&R(2)?"n":""}">₹${c}</span>`).join("")}</div>`,o:opts(tot,1).map(v=>"₹"+v),a:"₹"+tot})}
+  else{const it=pick([["🍎",5],["🍪",10],["🎈",8],["🍫",15],["✏️",7]]),h=pick([5,8,10,12,20]);
+   qs.push({html:`<p>You have ₹${h}.<br>This costs ₹${it[1]}.</p><div class="big">${it[0]}</div><p>Can you buy it?</p>`,o:["Yes ✅","No ❌"],a:h>=it[1]?"Yes ✅":"No ❌"})}}
+ quiz(qs,"money"+day,"Coin shop")}
+
+/* ---------- Words and letters ---------- */
+function letQ(l,pool,type,L){
+ const others=pool.filter(x=>x[0]!==l[0]);
+ if(type=="pic"){const d=shuf([...new Set(others.map(x=>x[5]))].filter(e=>e!==l[5])).slice(0,2);
+  return {html:`<p>Which picture starts with this letter?</p><div class="big" style="font-size:90px">${l[0]}</div>`,o:shuf([l[5],...d]),a:l[5],say:[["Which picture starts with this letter?","en"],[l[0],L]]}}
+ const d=shuf(others.map(x=>x[0])).slice(0,2);
+ return {html:`<p>Which letter does this word start with?</p><div class="big" style="font-size:44px">${l[2]} ${l[5]}</div>`,o:shuf([l[0],...d]),a:l[0],say:[["Which letter does this word start with?","en"],[l[2],L]]}}
+function runReview(){
+ const E=[...WORDS.en1,...WORDS.en2],qs=[];
+ shuf(E).slice(0,2).forEach(w=>qs.push({html:`<p>Which word means</p><div class="big" style="font-size:36px">"${w[1]}"?</div>`,o:shuf([w[0],...shuf(E.filter(x=>x!==w)).slice(0,2).map(x=>x[0])]),a:w[0]}));
+ ["hi","kn"].forEach(L=>{const pool=[...LET[L+"1"],...LET[L+"2"]];shuf(pool).slice(0,2).forEach((l,i)=>qs.push(letQ(l,pool,i?"word":"pic",L)))});
+ quiz(shuf(qs),"words"+day,"Word review")}
+function runLetters(key){
+ const L=key.slice(0,2),set=LET[key],pool=[...LET[L+"1"],...LET[L+"2"]];
+ const cards=set.map(w=>`<div class="card"><span class="w" style="font-size:72px;min-width:96px;text-align:center">${w[0]}</span><div><span class="w" style="font-size:30px">${w[2]} ${w[5]}</span><small>${w[0]} says “${w[1]}” (${HINT[w[1]]}).<br>${w[2]} (${w[3]}) means ${w[4]}.</small></div><button class="speak" onclick="speak('${w[0]}','${L}')">🔤</button><button class="speak" onclick="speak('${w[2]}','${L}')">🔊</button></div>`);
+ $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button></div><h1>${L=="hi"?"Hindi":"Kannada"} letters</h1><p class="note">Say each letter together. 🔤 says the letter and 🔊 says the word. If a voice is missing, say them aloud together.</p>${cards.join("")}<div class="center"><button class="go" id="gq">Quiz time!</button></div>`;
+ $("#gq").onclick=()=>{
+  const qs=shuf([...set.map(l=>letQ(l,pool,"pic",L)),...shuf(set).slice(0,2).map(l=>letQ(l,pool,"word",L))]);
+  quiz(qs,"words"+day,"New letters")}}
+function runWords(){
+ const key=PLAN[day].words;
+ if(key=="review")return runReview();
+ if(key[0]!="e")return runLetters(key);
+ const set=WORDS[key];
+ const learn=set.map(w=>`<div class="card"><span class="em">${w[2]}</span><div><span class="w">${w[0]}</span><small>means ${w[1]}</small></div><button class="speak" onclick="speak('${w[0]}','en')">🔊</button></div>`);
+ $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button></div><h1>New words</h1><p class="note">Read them together, then tap 🔊.</p>${learn.join("")}<div class="center"><button class="go" id="gq">Quiz time!</button></div>`;
+ $("#gq").onclick=()=>{
+  const qs=shuf(set).map(w=>{const o=shuf([w[0],...shuf(set.filter(x=>x!==w)).slice(0,2).map(x=>x[0])]);return {html:`<p>Which word means</p><div class="big" style="font-size:36px">"${w[1]}"?</div>`,o,a:w[0]}});
+  quiz(qs,"words"+day,"New words")}}
+
+/* ---------- Chess ---------- */
+const PIECE={pawn:["♟","The pawn walks straight forward, one step. On its very first move it may hop two steps!"],rook:["♜","The rook slides in straight lines: up, down, left or right."],bishop:["♝","The bishop slides diagonally, like a slanted line."]};
+function legal(p,r,c){const s=new Set(),add=(a,b)=>{if(a>=0&&a<8&&b>=0&&b<8)s.add(a*8+b)};
+ if(p=="pawn"){add(r-1,c);if(r==6)add(r-2,c)}
+ else if(p=="rook"){for(let k=0;k<8;k++){if(k!=r)add(k,c);if(k!=c)add(r,k)}}
+ else{for(let k=-7;k<8;k++){if(k){add(r+k,c+k);add(r+k,c-k)}}}return s}
+function runGame(){const G=PLAN[day].game;if(G=="sudoku")return sudoku();
+ let i=0,good=0;const N=5;
+ const round=()=>{
+  if(i>=N){const n=grade("game"+day,good/N);return end("Chess practice",n)}
+  const g=G=="chessmix"?pick(["pawn","rook","bishop"]):G;const r=g=="pawn"?2+R(5):R(8),c=R(8),L=legal(g,r,c);let h="";
+  for(let k=0;k<64;k++){const rr=k>>3,cc=k&7;h+=`<button class="sq ${(rr+cc)%2?"dk":""} ${k==r*8+c?"pc":""}" data-k="${k}">${k==r*8+c?PIECE[g][0]:""}</button>`}
+  $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button><span class="pill">⭐ ${bal()}</span></div><div class="bar"><i style="width:${i/N*100}%"></i></div>
+  <p class="center">${PIECE[g][1]} <button class="speak" style="width:44px;height:44px;font-size:22px" onclick="speak(PIECE['${g}'][1],'en')" aria-label="Hear it">🔊</button><br><b>Tap a square where it can go.</b></p><div class="board">${h}</div>`;
+  let tried=0;document.querySelectorAll(".sq").forEach(b=>b.onclick=()=>{const k=+b.dataset.k;if(k==r*8+c)return;
+   if(L.has(k)){b.classList.add("ok");if(!tried)good++;document.querySelectorAll(".sq").forEach(x=>x.disabled=true);setTimeout(()=>{i++;round()},800)}
+   else{tried++;b.classList.add("bad")}})};round()}
+
+/* ---------- Sudoku 4x4 ---------- */
+function sudoku(){
+ const base=[[1,2,3,4],[3,4,1,2],[2,1,4,3],[4,3,2,1]],perm=shuf([1,2,3,4]);
+ const sol=base.map(r=>r.map(v=>perm[v-1])),g=sol.map(r=>r.slice()),given=g.map(r=>r.map(()=>true));
+ shuf([...Array(16).keys()]).slice(0,7).forEach(k=>{g[k>>2][k&3]=0;given[k>>2][k&3]=false});
+ let sel=-1,wrong=0;
+ const ok=(r,c,v)=>{for(let k=0;k<4;k++){if(k!=c&&g[r][k]==v)return false;if(k!=r&&g[k][c]==v)return false}
+  const br=r&~1,bc=c&~1;for(let a=0;a<2;a++)for(let b=0;b<2;b++)if((br+a!=r||bc+b!=c)&&g[br+a][bc+b]==v)return false;return true};
+ const draw=()=>{let h="";for(let k=0;k<16;k++){const r=k>>2,c=k&3,v=g[r][c];
+  h+=`<button class="sc ${given[r][c]?"g":""} ${k==sel?"sel":""} ${c==1?"r2":""} ${r==1?"b2":""} ${v?"cl"+(v-1):""}" data-k="${k}">${v||""}</button>`}
+  $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button><span class="pill">⭐ ${bal()}</span></div>
+  <p class="center">Use 1, 2, 3, 4 once in every row, column and box.<br><b>Tap an empty square, then a number.</b></p><div class="sud">${h}</div>
+  <div class="opts">${[1,2,3,4].map(n=>`<button class="opt" style="min-width:80px" data-n="${n}">${n}</button>`).join("")}</div>`;
+  document.querySelectorAll(".sc").forEach(b=>b.onclick=()=>{const k=+b.dataset.k;if(!given[k>>2][k&3]){sel=k;draw()}});
+  document.querySelectorAll("[data-n]").forEach(b=>b.onclick=()=>{if(sel<0)return;const r=sel>>2,c=sel&3,n=+b.dataset.n;
+   if(ok(r,c,n)){g[r][c]=n;sel=-1;if(g.every(x=>x.every(y=>y))){const s=grade("game"+day,clamp(1-wrong/7,0,1));return end("Mini sudoku",s)}draw()}
+   else{wrong++;const cell=document.querySelector(`.sc[data-k="${sel}"]`);cell.classList.add("bad");setTimeout(()=>cell.classList.remove("bad"),500)}})};
+ draw()}
+
+/* ---------- How things work (animated, offline) ---------- */
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const teethSvg=(n,cx,cy,r,w,h,fill)=>Array.from({length:n},(_,k)=>`<rect x="${cx-w/2}" y="${cy-r-h+2}" width="${w}" height="${h}" rx="2" transform="rotate(${k*360/n} ${cx} ${cy})" fill="${fill}"/>`).join("");
+const raysSvg=(cx,cy,r1,r2,n)=>Array.from({length:n},(_,k)=>{const a=k*2*Math.PI/n;return `<line x1="${cx+r1*Math.cos(a)}" y1="${cy+r1*Math.sin(a)}" x2="${cx+r2*Math.cos(a)}" y2="${cy+r2*Math.sin(a)}"/>`}).join("");
+const FONT=`font-family="Trebuchet MS,Segoe UI,sans-serif"`;
+const SCI={
+steer:{icon:"🚗",title:"Steering wheel",blurb:"How does turning the wheel turn the car?",
+ svg:`<svg viewBox="0 0 600 440" role="img" aria-label="How a steering wheel turns a car">
+<rect width="600" height="440" rx="20" fill="#eaf6ff"/>
+<rect x="96" y="196" width="408" height="200" rx="46" fill="#cfd8f6" opacity=".55"/>
+<g data-p="shaft"><line x1="300" y1="118" x2="300" y2="300" stroke="#8a8aa8" stroke-width="12" stroke-linecap="round"/></g>
+<g data-p="wheel"><g id="swr"><circle cx="300" cy="70" r="48" fill="none" stroke="#2b2a4c" stroke-width="12"/><line x1="252" y1="70" x2="348" y2="70" stroke="#2b2a4c" stroke-width="9"/><line x1="300" y1="70" x2="300" y2="118" stroke="#2b2a4c" stroke-width="9"/><circle cx="300" cy="70" r="12" fill="#ff7a3d"/><circle cx="300" cy="22" r="7" fill="#e5484d"/></g></g>
+<g data-p="rack" id="rk"><rect x="110" y="340" width="380" height="22" rx="6" fill="#6c5ce7"/>${Array.from({length:22},(_,k)=>`<rect x="${112+k*17.3}" y="333" width="9" height="8" fill="#6c5ce7"/>`).join("")}</g>
+<g data-p="gear" id="pin"><circle cx="300" cy="320" r="20" fill="#f4b400" stroke="#b88900" stroke-width="3"/>${teethSvg(8,300,320,20,8,9,"#f4b400")}<circle cx="300" cy="306" r="3.5" fill="#5a4300"/></g>
+<g data-p="rods" stroke="#2bb3a3" stroke-width="9" stroke-linecap="round"><line id="rdL"/><line id="rdR"/></g>
+<g data-p="wheels"><g id="wl"><line x1="0" y1="0" x2="0" y2="90" stroke="#8a8aa8" stroke-width="8"/><circle cx="0" cy="90" r="8" fill="#2bb3a3"/><rect x="-14" y="-38" width="28" height="76" rx="7" fill="#2b2a4c"/></g><g id="wr"><line x1="0" y1="0" x2="0" y2="90" stroke="#8a8aa8" stroke-width="8"/><circle cx="0" cy="90" r="8" fill="#2bb3a3"/><rect x="-14" y="-38" width="28" height="76" rx="7" fill="#2b2a4c"/></g></g>
+<g font-size="19" font-weight="700" fill="#2b2a4c" ${FONT}><text x="362" y="76">steering wheel</text><text x="316" y="205">shaft</text><text x="332" y="318">gear</text><text x="312" y="392">rack (bar with teeth)</text><text x="70" y="200" text-anchor="middle">wheel</text><text x="530" y="200" text-anchor="middle">wheel</text><text x="40" y="392">rod</text></g>
+<text x="300" y="428" text-anchor="middle" font-size="16" fill="#6b6a8c" ${FONT}>▼ front of the car</text></svg>`,
+ tryHtml:`<p><b>Turn the wheel 🔄</b></p><input type="range" id="sl" min="-120" max="120" value="0" aria-label="Turn the steering wheel">`,
+ steps:[
+ {t:"This is the steering wheel. When the driver turns it, the car can turn left or right.",dur:12,hi:["wheel"]},
+ {t:"The wheel is joined to a long rod called a shaft. When the wheel turns, the shaft turns too.",dur:13,hi:["shaft"]},
+ {t:"At the bottom of the shaft is a small gear. A gear is a wheel with teeth.",dur:13,hi:["gear"]},
+ {t:"The gear's teeth grab a flat bar with teeth. This bar is called a rack. When the gear spins, the rack slides left or right.",dur:16,hi:["rack"]},
+ {t:"Rods are joined to both ends of the rack. When the rack slides, the rods push and pull the wheels.",dur:14,hi:["rods"]},
+ {t:"So the front wheels turn, and the car goes where the driver points it!",dur:12,hi:["wheels"]},
+ {t:"Now you try! Move the slider to turn the steering wheel, and watch the front wheels.",try:true,hi:[]}],
+ bind(st){$("#sl").oninput=e=>{st.user.v=+e.target.value}},
+ tick(st){
+  const E=st.E,th=st.step===6?(st.user.v||0):75*Math.sin(st.t*.8);
+  const rad=th*Math.PI/180,x=-20*rad;
+  const phi=Math.asin(clamp(-x/90,-1,1)),pd=phi*180/Math.PI,ay=250+90*Math.cos(phi);
+  E("swr").setAttribute("transform",`rotate(${th} 300 70)`);
+  E("pin").setAttribute("transform",`rotate(${th} 300 320)`);
+  E("rk").setAttribute("transform",`translate(${x} 0)`);
+  E("wl").setAttribute("transform",`translate(70 250) rotate(${pd})`);
+  E("wr").setAttribute("transform",`translate(530 250) rotate(${pd})`);
+  [["rdL",122,70],["rdR",478,530]].forEach(([id,rx,wx])=>{const l=E(id);l.setAttribute("x1",rx+x);l.setAttribute("y1",351);l.setAttribute("x2",wx+x);l.setAttribute("y2",ay)});
+ },
+ quiz:[{q:"What is the flat bar with teeth called?",o:["Rack","Shaft","Door"],a:"Rack"},
+  {q:"What does the shaft carry down from the steering wheel?",o:["The turning","Water","Music"],a:"The turning"},
+  {q:"What do the rods push and pull?",o:["The front wheels","The seats","The radio"],a:"The front wheels"}]},
+
+magnet:{icon:"🧲",title:"Magnets",blurb:"Why do magnets pull and push?",
+ svg:`<svg viewBox="0 0 600 300" role="img" aria-label="Magnets pulling and pushing">
+<rect width="600" height="300" rx="20" fill="#fff3d6"/>
+<text id="msg" x="300" y="50" text-anchor="middle" font-size="28" font-weight="700" fill="#2b2a4c" ${FONT}></text>
+<g id="gBar">
+<g data-p="magA"><rect x="40" y="110" width="75" height="58" fill="#e5484d"/><rect x="115" y="110" width="75" height="58" fill="#3b82f6"/><g font-size="32" font-weight="800" fill="#fff" text-anchor="middle" ${FONT}><text x="77" y="151">N</text><text x="152" y="151">S</text></g></g>
+<g id="mR" data-p="magB"><rect id="rA" x="0" y="110" width="75" height="58"/><rect id="rB" x="75" y="110" width="75" height="58"/><g font-size="32" font-weight="800" fill="#fff" text-anchor="middle" ${FONT}><text id="tA" x="37" y="151"></text><text id="tB" x="112" y="151"></text></g></g>
+<text id="fx" x="300" y="240" text-anchor="middle" font-size="40" font-weight="700" fill="#2b2a4c" ${FONT}></text>
+</g>
+<g id="gItems" display="none" font-size="58" text-anchor="middle"><text id="it1" x="230" y="250">📎</text><text id="it2" x="330" y="250">🧸</text><text id="it3" x="430" y="250">🪵</text><text id="mg" x="130" y="150" font-size="64">🧲</text></g></svg>`,
+ tryHtml:`<button id="fl">🔄 Flip the magnet</button>`,
+ steps:[
+ {t:"A magnet has two ends. One end is called North. It is red. The other end is called South. It is blue.",dur:13,hi:["magA"]},
+ {t:"Different ends pull together. We say they attract.",dur:12,hi:["magA","magB"]},
+ {t:"Same ends push apart. We say they repel.",dur:12,hi:["magA","magB"]},
+ {t:"Magnets pick up things made of iron, like a paper clip. They do not pick up toys or wood.",dur:16,hi:[]},
+ {t:"Your turn! Press the button to flip the magnet. Does it pull or push?",try:true,hi:[]}],
+ enter(st,n){if(n===0||n===1)st.pos=420;if(n===2)st.pos=215;if(n===4){st.user.flip=false;st.pos=430}if(n===3){st.iy={it1:250,it2:250,it3:250}}},
+ bind(st){$("#fl").onclick=()=>{st.user.flip=!st.user.flip}},
+ tick(st,dt){
+  const E=st.E,s=st.step,items=s===3;
+  E("gBar").setAttribute("display",items?"none":"inline");E("gItems").setAttribute("display",items?"inline":"none");
+  if(st.pos==null)st.pos=420;
+  if(!items){
+   const flip=s===2||(s===4&&!!st.user.flip);
+   let target=420;if(s===1)target=st.sp>2?191:420;if(s===2)target=430;if(s===4)target=flip?430:191;
+   st.pos+=(target-st.pos)*Math.min(1,dt*2);
+   E("mR").setAttribute("transform",`translate(${st.pos} 0)`);
+   E("rA").setAttribute("fill",flip?"#3b82f6":"#e5484d");E("rB").setAttribute("fill",flip?"#e5484d":"#3b82f6");
+   E("tA").textContent=flip?"S":"N";E("tB").textContent=flip?"N":"S";
+   E("msg").textContent=s===0?"North is red. South is blue.":flip?"Same ends: they push apart!":"Different ends: they pull together!";
+   E("fx").textContent=s===0?"":flip?"💥 PUSH":"🤝 PULL";
+  }else{
+   const m=130+clamp((st.sp-1)/13,0,1)*350;E("mg").setAttribute("x",m);
+   [["it1",230,true],["it2",330,false],["it3",430,false]].forEach(([id,x,iron])=>{
+    const ty=iron&&Math.abs(m-x)<45?205:250;st.iy[id]+=(ty-st.iy[id])*Math.min(1,dt*8);E(id).setAttribute("y",st.iy[id])});
+   const lifted=st.iy.it1<225,over=Math.abs(m-330)<45||Math.abs(m-430)<45;
+   E("msg").textContent=lifted?"Iron sticks to the magnet!":over?"Plastic and wood do not stick.":"Watch what the magnet picks up.";
+  }
+ },
+ quiz:[{q:"Different ends of two magnets…",o:["pull together","push apart","do nothing"],a:"pull together"},
+  {q:"Same ends of two magnets…",o:["push apart","pull together","sing"],a:"push apart"},
+  {q:"Which one sticks to a magnet?",o:["📎","🧸","🪵"],a:"📎"}]},
+
+sky:{icon:"🌍",title:"Day and night",blurb:"Why do we have day and night?",
+ svg:`<svg viewBox="0 0 600 400" role="img" aria-label="Earth spinning in front of the Sun">
+<defs><clipPath id="ec"><circle cx="400" cy="200" r="95"/></clipPath></defs>
+<rect width="600" height="400" rx="20" fill="#12163f"/>${Array.from({length:30},(_,k)=>`<circle cx="${(k*97+20)%600}" cy="${(k*53+10)%400}" r="${1+k%3*.6}" fill="#fff" opacity=".7"/>`).join("")}
+<g data-p="sun"><g id="rays" stroke="#ffb703" stroke-width="7" stroke-linecap="round">${raysSvg(105,200,72,90,12)}</g><circle cx="105" cy="200" r="62" fill="#ffd23f"/></g>
+<g data-p="earth"><circle cx="400" cy="200" r="95" fill="#2a6fdb"/><g clip-path="url(#ec)"><g id="eg" fill="#3fb56b"><ellipse cx="455" cy="170" rx="34" ry="22"/><ellipse cx="350" cy="240" rx="38" ry="20"/><ellipse cx="400" cy="130" rx="26" ry="14"/><ellipse cx="385" cy="205" rx="22" ry="16"/><ellipse cx="445" cy="255" rx="22" ry="14"/></g></g><path d="M400 105 A95 95 0 0 1 400 295 Z" fill="#050820" opacity=".6"/></g>
+<g data-p="pin" id="pinG"><circle cx="495" cy="200" r="10" fill="#e5484d" stroke="#fff" stroke-width="3"/><text x="495" y="205" font-size="13" text-anchor="middle">🏠</text></g>
+<g font-size="20" font-weight="700" fill="#fff" ${FONT}><text x="105" y="305" text-anchor="middle">Sun</text><text x="400" y="330" text-anchor="middle">Earth</text></g>
+<text id="stat" x="300" y="48" text-anchor="middle" font-size="34" font-weight="800" fill="#fff" ${FONT}></text></svg>`,
+ tryHtml:`<p><b>Spin the Earth 🌍</b></p><input type="range" id="sl" min="0" max="360" value="0" aria-label="Spin the Earth">`,
+ steps:[
+ {t:"The Sun is a giant, hot, glowing star. It sends light to the Earth.",dur:11,hi:["sun"]},
+ {t:"Earth is a big ball where we live. Find the little red pin. That is our home!",dur:12,hi:["pin"]},
+ {t:"Earth spins round and round, like a top. One full spin takes one day, which is 24 hours.",dur:14,hi:["earth"]},
+ {t:"When our home faces the Sun, it is bright. This is daytime!",dur:12,hi:["pin","sun"]},
+ {t:"When our home turns away from the Sun, it is dark. This is night time!",dur:12,hi:["pin"]},
+ {t:"Now you spin the Earth! Move the slider and watch our home go from day to night.",try:true,hi:[]}],
+ bind(st){$("#sl").oninput=e=>{st.user.v=+e.target.value}},
+ tick(st,dt){
+  const E=st.E,s=st.step;if(st.rot==null)st.rot=0;
+  const ease=tg=>{const d=((tg-st.rot+540)%360)-180;st.rot+=d*Math.min(1,dt*2.5)};
+  if(s===1)st.rot-=dt*8;else if(s===2)st.rot-=dt*45;
+  else if(s===3)ease(180+12*Math.sin(st.t));else if(s===4)ease(12*Math.sin(st.t));
+  else if(s===5)st.rot=-(st.user.v||0);
+  E("eg").setAttribute("transform",`rotate(${st.rot} 400 200)`);E("pinG").setAttribute("transform",`rotate(${st.rot} 400 200)`);
+  E("rays").setAttribute("transform",`rotate(${st.t*6} 105 200)`);
+  const isDay=Math.cos(st.rot*Math.PI/180)<0;
+  E("stat").textContent=s>=3?(isDay?"☀️ Day time!":"🌙 Night time!"):"";
+ },
+ quiz:[{q:"What spins round to give us day and night?",o:["Earth","Sun","Cloud"],a:"Earth"},
+  {q:"How long does one spin of Earth take?",o:["One day","One hour","One year"],a:"One day"},
+  {q:"When our home faces the Sun, it is…",o:["day","night"],a:"day"}]},
+
+water:{icon:"🌧️",title:"Water cycle",blurb:"Where does rain come from?",
+ svg:`<svg viewBox="0 0 600 400" role="img" aria-label="The water cycle">
+<rect width="600" height="400" rx="20" fill="#cfeaff"/>
+<g data-p="sun"><g stroke="#ffb703" stroke-width="6" stroke-linecap="round">${raysSvg(530,62,44,60,10)}</g><circle id="sunc" cx="530" cy="62" r="34" fill="#ffd23f"/></g>
+<polygon points="0,335 150,140 300,335" fill="#7f8f6e"/><polygon points="150,140 122,184 150,172 178,186" fill="#fff"/>
+<g data-p="river"><path id="rv" d="M160 200 C190 250 210 285 255 338" fill="none" stroke="#3b82f6" stroke-width="9" stroke-dasharray="14 10" stroke-linecap="round"/></g>
+<g data-p="sea"><rect x="0" y="332" width="600" height="68" fill="#3b82f6"/><path d="M0 332 q25 -14 50 0 t50 0 t50 0 t50 0 t50 0 t50 0 t50 0 t50 0 t50 0 t50 0 t50 0 t50 0" fill="none" stroke="#9cc8ff" stroke-width="4"/></g>
+<g data-p="vapour">${Array.from({length:16},(_,i)=>`<circle id="v${i}" r="6" fill="#6fb4ff" stroke="#fff" stroke-width="2" opacity="0"/>`).join("")}</g>
+<g data-p="cloud"><g id="cld" fill="#fff"><circle cx="0" cy="0" r="32"/><circle cx="-36" cy="14" r="25"/><circle cx="36" cy="14" r="27"/><rect x="-36" y="10" width="72" height="30" rx="14"/></g></g>
+<g data-p="rain">${Array.from({length:14},(_,i)=>`<ellipse id="r${i}" rx="4" ry="8" fill="#2563eb" opacity="0"/>`).join("")}</g>
+<g font-size="18" font-weight="700" fill="#fff" ${FONT}><text x="470" y="372">sea</text></g></svg>`,
+ tryHtml:`<p><b>❄️ cool &nbsp;&nbsp; ☀️ hot</b></p><input type="range" id="sl" min="0" max="2" step="0.1" value="1" aria-label="Sun heat">`,
+ steps:[
+ {t:"The Sun shines on the sea and makes the water warm.",dur:10,hi:["sun","sea"]},
+ {t:"Warm water turns into tiny drops that float up into the air. This is called evaporation.",dur:13,hi:["vapour"]},
+ {t:"High up it is cold, so the tiny drops join together and make a cloud.",dur:13,hi:["cloud"]},
+ {t:"When the cloud gets heavy, the water falls down as rain.",dur:12,hi:["rain"]},
+ {t:"Rain runs down the mountain in a river and goes back to the sea. Then it all starts again!",dur:14,hi:["river"]},
+ {t:"Your turn! Make the Sun cool or hot and see what happens to the cloud.",try:true,hi:[]}],
+ bind(st){st.user.heat=1;$("#sl").oninput=e=>{st.user.heat=+e.target.value}},
+ tick(st,dt){
+  const E=st.E,s=st.step,heat=s===5?st.user.heat:1,heavy=s===3||s===4||(s===5&&heat>1.4);
+  for(let i=0;i<16;i++){const c=E("v"+i),on=s>=1&&i<Math.round(heat*10),p=(st.t*.22*Math.max(.3,heat)+i/16)%1;
+   c.setAttribute("cx",320+i*14+7*Math.sin(st.t*2+i));c.setAttribute("cy",322-p*210);c.setAttribute("opacity",on?1-p*.5:0)}
+  const target=s<=1?.35:s===5?.25+.5*heat:s===2?1:1.12;
+  st.cs=st.cs==null?.35:st.cs;st.cs+=(target-st.cs)*Math.min(1,dt*1.2);
+  E("cld").setAttribute("transform",`translate(330 100) scale(${st.cs})`);E("cld").setAttribute("fill",heavy?"#8892a8":"#fff");
+  for(let i=0;i<14;i++){const d=E("r"+i),q=(st.t*.8+i/14)%1;
+   d.setAttribute("cx",275+(i*37)%110);d.setAttribute("cy",150+q*165);d.setAttribute("opacity",heavy?1:0)}
+  E("rv").setAttribute("stroke-dashoffset",-st.t*30);
+  E("sunc").setAttribute("r",34+(s===5?(heat-1)*8:0)+2*Math.sin(st.t*3));
+ },
+ quiz:[{q:"What warms the sea water?",o:["The Sun","The Moon","A fan"],a:"The Sun"},
+  {q:"Water going up as tiny drops is called…",o:["evaporation","a river","snow"],a:"evaporation"},
+  {q:"What falls from a heavy cloud?",o:["Rain","Sand","Leaves"],a:"Rain"}]}
+};
+const SCI_ORDER=["steer","magnet","sky","water"];
+const feat=()=>SCI_ORDER[(wkNum()*3+({1:0,3:1,5:2}[day]||0))%SCI_ORDER.length];
+
+function sciMenu(){
+ stopScene();
+ $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button><span class="pill">⭐ ${bal()}</span></div><h1>🔬 How things work</h1><p class="note">Watch the short story, then try it yourself. Each one takes about 1½ minutes.</p>
+ ${SCI_ORDER.map(k=>`<button class="sci" onclick="runSci('${k}')"><span class="em">${SCI[k].icon}</span><div><b>${SCI[k].title}${k==feat()?" ⭐":""}</b><small>${SCI[k].blurb}${k==feat()?" (today's pick)":""}</small></div></button>`).join("")}`;
+}
+
+function runSci(key,qid){
+ stopScene();qid=qid||("sci"+day);
+ const sc=SCI[key],steps=sc.steps;
+ $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button><span class="pill">${sc.icon} ${sc.title}</span></div>
+ <div class="stage" id="stage">${sc.svg}</div><div class="tryz" id="tz">${sc.tryHtml}</div><div class="cap" id="cap"></div>
+ <div class="bar"><i id="sb" style="width:0"></i></div>
+ <div class="ctl"><button id="bk" aria-label="Back">⏮</button><button id="pp" aria-label="Pause">⏸</button><button id="fw" aria-label="Next">⏭</button><button id="mu" aria-label="Sound">${speakOn?"🔊":"🔇"}</button></div>`;
+ const root=$("#stage svg"),st={t:0,sp:0,step:0,e:{},user:{},root,E:id=>st.e[id]||(st.e[id]=root.querySelector("#"+id))};
+ let paused=false,last=performance.now();
+ const me=PL={};
+ const finish=()=>{stopScene();const raw=typeof sc.quiz=="function"?sc.quiz():sc.quiz;quiz(raw.map(q=>q.html?q:{html:`<p>${q.q}</p>`,o:shuf(q.o),a:q.a}),qid,sc.title)};
+ const go=n=>{
+  if(n<0)n=0;
+  if(n>=steps.length)return finish();
+  st.step=n;st.sp=0;const s=steps[n];
+  $("#cap").textContent=s.t;$("#tz").classList.toggle("on",!!s.try);
+  root.querySelectorAll("[data-p]").forEach(el=>el.classList.toggle("hi",!!(s.hi&&s.hi.includes(el.dataset.p))));
+  $("#sb").style.width=((n+1)/steps.length*100)+"%";
+  $("#fw").textContent=n===steps.length-1?"✅":"⏭";
+  if(sc.enter)sc.enter(st,n);
+  if(speakOn&&!paused)speak(s.t,"en");
+ };
+ me.go=go;me.st=st;
+ const frame=now=>{
+  if(PL!==me)return;
+  const dt=Math.min(.1,(now-last)/1000);last=now;
+  if(!paused){st.t+=dt;st.sp+=dt;const s=steps[st.step];if(!s.try&&st.sp>=s.dur){go(st.step+1);if(PL!==me)return}}
+  sc.tick(st,dt);raf=requestAnimationFrame(frame)};
+ $("#bk").onclick=()=>go(st.step-1);
+ $("#fw").onclick=()=>go(st.step+1);
+ $("#pp").onclick=()=>{paused=!paused;$("#pp").textContent=paused?"▶":"⏸";if(paused){try{speechSynthesis.cancel()}catch(e){}}else if(speakOn)speak(steps[st.step].t,"en")};
+ $("#mu").onclick=()=>{speakOn=!speakOn;$("#mu").textContent=speakOn?"🔊":"🔇";if(!speakOn){try{speechSynthesis.cancel()}catch(e){}}};
+ sc.bind(st);go(0);raf=requestAnimationFrame(frame);
+}
+
+/* ---------- Ask a question ---------- */
+function runAsk(){
+ stopScene();
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition,inApp=!!window.AndroidTTS;
+ let lang="en-IN",rec=null;
+ $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button></div><h1>❓ Ask a question</h1>
+ ${inApp?`<p class="note">Finding videos needs the internet and Chrome. Open the Atharva Activity file in Chrome when you are online.</p>`:""}
+ <div class="center">${SR&&!inApp?`<button class="mic" id="mic" aria-label="Ask with your voice">🎤</button><p id="ms">Tap the mic and ask your question</p>
+ <div class="lang">${[["en-IN","English"],["hi-IN","हिंदी"],["kn-IN","ಕನ್ನಡ"]].map(([c,n])=>`<button data-l="${c}" class="${c==lang?"on":""}">${n}</button>`).join("")}</div>`:`<p class="note">Type the question here.</p>`}
+ <input class="txt" id="qt" placeholder="Why is the sky blue?" aria-label="Your question">
+ <p class="note">Tip: you can also tap the 🎤 on the keyboard to speak.</p><button class="go" id="fv">🔎 Find a video</button><p class="note" id="nt"></p></div>`;
+ const note=t=>{$("#nt").textContent=t};
+ if(SR&&!inApp){
+  document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{lang=b.dataset.l;document.querySelectorAll(".lang button").forEach(x=>x.classList.toggle("on",x===b))});
+  $("#mic").onclick=()=>{
+   if(rec){rec.stop();return}
+   rec=new SR();rec.lang=lang;rec.interimResults=false;rec.maxAlternatives=1;
+   rec.onstart=()=>{$("#mic").classList.add("rec");$("#ms").textContent="Listening… 👂"};
+   rec.onresult=e=>{$("#qt").value=e.results[0][0].transcript;$("#ms").textContent="Did I hear that right? Fix it if not."};
+   rec.onerror=e=>{$("#ms").textContent=(e.error=="not-allowed"||e.error=="service-not-allowed")?"The microphone is blocked. Allow it in Chrome site settings, or use the 🎤 on the keyboard.":e.error=="network"?"The mic needs the internet.":"I could not hear that. Try again."};
+   rec.onend=()=>{$("#mic").classList.remove("rec");rec=null};
+   rec.start()}}
+ $("#fv").onclick=()=>{
+  const q=$("#qt").value.trim();
+  if(inApp)return note("This needs the Chrome version of the app.");
+  if(!q)return note("Ask or type a question first.");
+  if(!navigator.onLine)return note("No internet right now. The animations still work offline.");
+  const a=6+R(4),b=6+R(4);
+  $("#app").innerHTML=`<div class="q center"><h2>👨‍👩‍👦 Grown-ups only</h2><p>Videos come from YouTube, so a grown-up should sit with Atharva.</p><p>To open it, what is <b>${a} × ${b}</b>?</p><input class="txt" id="gt" type="number" inputmode="numeric" style="max-width:200px;text-align:center"><br><button class="go" id="gk">Open videos</button> <button class="back" onclick="runAsk()">Cancel</button><p class="note" id="gn2"></p></div>`;
+  $("#gk").onclick=()=>{
+   if(+$("#gt").value!==a*b)return($("#gn2").textContent="Not quite. Try again.");
+   window.open("https://www.youtube.com/results?search_query="+encodeURIComponent(q+" for kids")+"&sp=EgIYAQ%253D%253D","_blank","noopener");
+   runAsk()}};
+}
+
+/* ---------- Maze ---------- */
+function mazeGen(n){
+ const c=Array.from({length:n*n},()=>({N:1,S:1,E:1,W:1,v:0}));
+ const st=[0];c[0].v=1;
+ while(st.length){
+  const i=st[st.length-1],r=(i/n)|0,q=i%n,nb=[];
+  if(r>0&&!c[i-n].v)nb.push(["N",i-n,"S"]);if(r<n-1&&!c[i+n].v)nb.push(["S",i+n,"N"]);
+  if(q>0&&!c[i-1].v)nb.push(["W",i-1,"E"]);if(q<n-1&&!c[i+1].v)nb.push(["E",i+1,"W"]);
+  if(!nb.length){st.pop();continue}
+  const [d,j,o]=pick(nb);c[i][d]=0;c[j][o]=0;c[j].v=1;st.push(j)}
+ return c}
+function runMaze(){
+ const lvl=S.mazeLevel||0,sizes=[5+lvl,6+lvl];let m=0;
+ const play=()=>{
+  if(m>=2){S.mazeLevel=Math.min(lvl+1,3);save();const s=grade("puz"+day,1);return end("Maze",s)}
+  const n=sizes[m],cs=44,pad=14,W=n*cs+pad*2,cells=mazeGen(n);let r=0,q=0;const trail=[[0,0]];
+  let walls="";
+  for(let i=0;i<n*n;i++){const y=(i/n|0)*cs+pad,x=(i%n)*cs+pad,k=cells[i];
+   if(k.N)walls+=`<line x1="${x}" y1="${y}" x2="${x+cs}" y2="${y}"/>`;if(k.W)walls+=`<line x1="${x}" y1="${y}" x2="${x}" y2="${y+cs}"/>`;
+   if((i/n|0)==n-1&&k.S)walls+=`<line x1="${x}" y1="${y+cs}" x2="${x+cs}" y2="${y+cs}"/>`;if(i%n==n-1&&k.E)walls+=`<line x1="${x+cs}" y1="${y}" x2="${x+cs}" y2="${y+cs}"/>`}
+  $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button><span class="pill">Maze ${m+1} of 2</span></div>
+  <p class="center"><b>Slide your finger to take the mouse 🐭 to the cheese 🧀</b></p>
+  <div class="stage"><svg id="mz" viewBox="0 0 ${W} ${W}" style="touch-action:none;max-height:62vh"><rect width="${W}" height="${W}" rx="14" fill="#fff6e0"/>
+  <polyline id="tr" fill="none" stroke="#ff7a3d" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/>
+  <g stroke="#2b2a4c" stroke-width="5" stroke-linecap="round">${walls}</g>
+  <text x="${pad+(n-1)*cs+cs/2}" y="${pad+(n-1)*cs+cs/2+12}" font-size="34" text-anchor="middle">🧀</text>
+  <text id="pl" font-size="34" text-anchor="middle">🐭</text></svg></div>
+  <div class="dpad"><button data-d="N" aria-label="Up">⬆️</button><div><button data-d="W" aria-label="Left">⬅️</button><button data-d="S" aria-label="Down">⬇️</button><button data-d="E" aria-label="Right">➡️</button></div></div>`;
+  const draw=()=>{const x=pad+q*cs+cs/2,y=pad+r*cs+cs/2;$("#pl").setAttribute("x",x);$("#pl").setAttribute("y",y+12);
+   $("#tr").setAttribute("points",trail.map(([a,b])=>`${pad+b*cs+cs/2},${pad+a*cs+cs/2}`).join(" "))};
+  let won=false;
+  const win=()=>{if(won)return;won=true;speak("You did it!","en");setTimeout(()=>{m++;play()},900)};
+  const step=d=>{const k=cells[r*n+q];if(k[d])return false;
+   if(d=="N")r--;if(d=="S")r++;if(d=="W")q--;if(d=="E")q++;
+   const l=trail.length;if(l>1&&trail[l-2][0]==r&&trail[l-2][1]==q)trail.pop();else trail.push([r,q]);
+   draw();if(r==n-1&&q==n-1)win();return true};
+  const toward=(tr,tq)=>{let guard=0;while((r!=tr||q!=tq)&&guard++<20&&!won){
+   const dr=tr-r,dq=tq-q;let d=Math.abs(dr)>=Math.abs(dq)?(dr<0?"N":"S"):(dq<0?"W":"E");
+   if(!step(d)){const alt=Math.abs(dr)>=Math.abs(dq)?(dq?(dq<0?"W":"E"):null):(dr?(dr<0?"N":"S"):null);if(!alt||!step(alt))break}}};
+  const svg=$("#mz");let down=false;
+  const cellAt=e=>{const b=svg.getBoundingClientRect(),sc=W/b.width;return [clamp(Math.floor(((e.clientY-b.top)*sc-pad)/cs),0,n-1),clamp(Math.floor(((e.clientX-b.left)*sc-pad)/cs),0,n-1)]};
+  svg.onpointerdown=e=>{down=true;try{svg.setPointerCapture(e.pointerId)}catch(x){}toward(...cellAt(e))};
+  svg.onpointermove=e=>{if(down)toward(...cellAt(e))};
+  svg.onpointerup=svg.onpointercancel=()=>{down=false};
+  document.querySelectorAll(".dpad button").forEach(b=>b.onclick=()=>step(b.dataset.d));
+  draw()};
+ play()}
+
+/* ---------- Memory match ---------- */
+function runMemory(){
+ const hi=[...LET.hi1,...LET.hi2].map(l=>[l,"hi"]),kn=[...LET.kn1,...LET.kn2].map(l=>[l,"kn"]);
+ const items=day==7?[...shuf(hi).slice(0,3),...shuf(kn).slice(0,3)]:shuf(hi).slice(0,6);
+ const cards=shuf(items.flatMap(([l,L],i)=>[{p:i,t:l[0],L,big:1},{p:i,t:l[5],L,big:0}]));
+ $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button><span class="pill" id="mv">Tries: 0</span></div>
+ <p class="center"><b>Match each letter with its picture</b></p><div class="mem">${cards.map((c,i)=>`<button class="mc" data-i="${i}" aria-label="Card"><span class="back-face">❓</span></button>`).join("")}</div>`;
+ let open=[],tries=0,matched=0,lock=false;
+ document.querySelectorAll(".mc").forEach(b=>b.onclick=()=>{
+  const i=+b.dataset.i,c=cards[i];if(lock||b.classList.contains("up")||b.classList.contains("done"))return;
+  b.classList.add("up");b.innerHTML=`<span class="${c.big?"lt":"em2"}">${c.t}</span>`;open.push(i);
+  if(c.big)speak(c.t,c.L);
+  if(open.length==2){tries++;$("#mv").textContent="Tries: "+tries;const [a,d]=open.map(k=>cards[k]);lock=true;
+   if(a.p==d.p){const bs=[...document.querySelectorAll(".mc")];open.forEach(k=>{bs[k].classList.add("done")});matched++;open=[];lock=false;
+    if(matched==items.length){const s=grade("puz"+day,clamp(1-(tries-items.length)/10,0,1));setTimeout(()=>end("Memory match",s),900)}}
+   else setTimeout(()=>{const bs=[...document.querySelectorAll(".mc")];open.forEach(k=>{bs[k].classList.remove("up");bs[k].innerHTML=`<span class="back-face">❓</span>`});open=[];lock=false},1000)}})}
+
+/* ---------- Crossword (3x3 ring, picture clues) ---------- */
+/* [across top, across bottom, down left, down right] */
+const CW=[["CAT","WEB","COW","TUB"],["BUS","TEN","BAT","SUN"],["BEE","DOG","BED","EGG"],["CAT","PAN","CUP","TEN"],["TUB","NUT","TEN","BAT"],["CUP","TEN","CAT","PIN"]];
+const WEM={CAT:"🐱",WEB:"🕸️",COW:"🐄",TUB:"🛁",BUS:"🚌",TEN:"🔟",BAT:"🦇",SUN:"☀️",BEE:"🐝",DOG:"🐶",BED:"🛏️",EGG:"🥚",PAN:"🍳",CUP:"☕",NUT:"🥜",PIN:"📌",HEN:"🐔",PIG:"🐷",CAR:"🚗",HAT:"🎩",FOX:"🦊",OWL:"🦉",ANT:"🐜",BOX:"📦",BAG:"👜",KEY:"🔑",MAP:"🗺️",TOY:"🧸",FISH:"🐟",FROG:"🐸",DUCK:"🦆",STAR:"⭐",MOON:"🌙",TREE:"🌳",BOOK:"📖",BALL:"⚽",CAKE:"🎂",LION:"🦁",BIRD:"🐦",SHIP:"🚢",DRUM:"🥁"};
+function runCrossword(){
+ const [a1,a2,d1,d2]=CW[wkNum()%CW.length];
+ const sol={};[[0,0,0,1,a1],[2,0,0,1,a2],[0,0,1,0,d1],[0,2,1,0,d2]].forEach(([r,c,dr,dc,w])=>{[...w].forEach((ch,i)=>{sol[(r+dr*i)+","+(c+dc*i)]=ch})});
+ const grid={};let sel=null,wrong=0;
+ const clue=(n,arrow,w)=>`<span class="cl"><b>${n}</b> ${arrow} ${WEM[w]}</span>`;
+ const draw=()=>{let h="";
+  for(let r=0;r<3;r++)for(let c=0;c<3;c++){const k=r+","+c;
+   if(!sol[k])h+=`<div class="xc blk"></div>`;
+   else h+=`<button class="xc ${sel==k?"sel":""}" data-k="${k}">${(k=="0,0"?"<i>1</i>":k=="0,2"?"<i>2</i>":k=="2,0"?"<i>3</i>":"")}${grid[k]||""}</button>`}
+  $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button><span class="pill">⭐ ${bal()}</span></div>
+  <p class="center"><b>Fill in the name of each picture</b></p>
+  <div class="clues">${clue(1,"➡️",a1)}${clue(3,"➡️",a2)}${clue(1,"⬇️",d1)}${clue(2,"⬇️",d2)}</div>
+  <div class="xg">${h}</div>
+  <div class="kb">${"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(l=>`<button data-l="${l}">${l}</button>`).join("")}</div>`;
+  document.querySelectorAll(".xc[data-k]").forEach(b=>b.onclick=()=>{sel=b.dataset.k;draw()});
+  document.querySelectorAll(".kb button").forEach(b=>b.onclick=()=>{
+   if(!sel)return($("#app").querySelector(".center b").textContent="Tap a square first");
+   if(sol[sel]==b.dataset.l){grid[sel]=b.dataset.l;sel=null;
+    if(Object.keys(sol).every(k=>grid[k])){const s=grade("puz"+day,clamp(1-wrong/8,0,1));return end("Crossword",s)}
+    draw()}
+   else{wrong++;const cell=document.querySelector(`.xc[data-k="${sel}"]`);cell.classList.add("bad");setTimeout(()=>cell.classList.remove("bad"),500)}})};
+ draw()}
+
+/* ---------- Word search ---------- */
+function runWordSearch(){
+ const N=6,bank=["CAT","DOG","SUN","BEE","HEN","PIG","BUS","CAR","HAT","EGG","FOX","OWL","ANT","BAT","COW","BED","CUP","KEY","MAP","TOY","BOX","BAG","FISH","FROG","DUCK","STAR","MOON","TREE","BOOK","BALL","CAKE","LION","BIRD","SHIP","DRUM"];
+ let words,grid;
+ for(let tryN=0;tryN<300;tryN++){
+  words=shuf(bank).slice(0,4);grid=Array.from({length:N},()=>Array(N).fill(""));let ok=true;
+  for(const w of words){let placed=false;
+   for(let t=0;t<80&&!placed;t++){const h=R(2)==0,r=R(h?N:N-w.length+1),c=R(h?N-w.length+1:N);let fit=true;
+    for(let i=0;i<w.length;i++){const g=grid[h?r:r+i][h?c+i:c];if(g&&g!==w[i]){fit=false;break}}
+    if(fit){for(let i=0;i<w.length;i++)grid[h?r:r+i][h?c+i:c]=w[i];placed=true}}
+   if(!placed){ok=false;break}}
+  if(ok)break}
+ const A="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+ for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(!grid[r][c])grid[r][c]=A[R(26)];
+ const found=new Set(),foundCells=new Set();let first=null,wrong=0;
+ const draw=()=>{
+  $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button><span class="pill">${found.size} of ${words.length}</span></div>
+  <p class="center"><b>Tap the first letter, then the last letter of a word</b></p>
+  <div class="wl">${words.map(w=>`<span class="${found.has(w)?"fd":""}">${WEM[w]} ${w}</span>`).join("")}</div>
+  <div class="ws">${grid.map((row,r)=>row.map((ch,c)=>`<button class="wc ${foundCells.has(r+","+c)?"fd":""} ${first&&first[0]==r&&first[1]==c?"sel":""}" data-r="${r}" data-c="${c}">${ch}</button>`).join("")).join("")}</div>`;
+  document.querySelectorAll(".wc").forEach(b=>b.onclick=()=>{
+   const r=+b.dataset.r,c=+b.dataset.c;
+   if(!first){first=[r,c];return draw()}
+   const [r0,c0]=first;first=null;
+   if(r0!=r&&c0!=c){wrong++;return draw()}
+   const cells=[];const dr=Math.sign(r-r0),dc=Math.sign(c-c0),len=Math.max(Math.abs(r-r0),Math.abs(c-c0))+1;
+   for(let i=0;i<len;i++)cells.push([r0+dr*i,c0+dc*i]);
+   const s=cells.map(([a,b])=>grid[a][b]).join(""),w=words.find(x=>!found.has(x)&&(x===s||x===[...s].reverse().join("")));
+   if(w){found.add(w);cells.forEach(([a,b])=>foundCells.add(a+","+b));speak(w,"en");
+    if(found.size==words.length){const st=grade("puz"+day,clamp(1-wrong/6,0,1));draw();return setTimeout(()=>end("Word search",st),900)}}
+   else wrong++;
+   draw()})};
+ draw()}
+
+
+const pad2=n=>String(n).padStart(2,"0");
+const clockWords=(h,m)=>m==0?`${h} o'clock`:m==30?`half past ${h}`:m==15?`quarter past ${h}`:m==45?`quarter to ${h%12+1}`:`${h}:${pad2(m)}`;
+const clockInner=(h,m,ids)=>{
+ const ha=((h%12)+m/60)*30,ma=m*6;
+ let nums="",ticks="";
+ for(let k=1;k<=12;k++){const a=k*Math.PI/6;nums+=`<text x="${200+124*Math.sin(a)}" y="${200-124*Math.cos(a)+12}" text-anchor="middle" font-size="34" font-weight="800" fill="#2b2a4c" font-family="Trebuchet MS,Segoe UI,sans-serif">${k}</text>`}
+ for(let k=0;k<60;k++){const a=k*Math.PI/30,r1=k%5?160:150;ticks+=`<line x1="${200+r1*Math.sin(a)}" y1="${200-r1*Math.cos(a)}" x2="${200+168*Math.sin(a)}" y2="${200-168*Math.cos(a)}" stroke="#2b2a4c" stroke-width="${k%5?2:4}"/>`}
+ return `<g data-p="face"><circle cx="200" cy="200" r="178" fill="#fff" stroke="#2b2a4c" stroke-width="10"/>${ticks}${nums}</g>
+ <g data-p="hour"><g ${ids?'id="hh"':""} transform="rotate(${ha} 200 200)"><line x1="200" y1="212" x2="200" y2="128" stroke="#e5484d" stroke-width="16" stroke-linecap="round"/></g></g>
+ <g data-p="minute"><g ${ids?'id="mh"':""} transform="rotate(${ma} 200 200)"><line x1="200" y1="214" x2="200" y2="62" stroke="#2563eb" stroke-width="9" stroke-linecap="round"/></g></g>
+ <circle cx="200" cy="200" r="11" fill="#2b2a4c"/>`};
+const clockStatic=(h,m)=>`<svg viewBox="0 0 400 400" width="270" height="270" role="img" aria-label="A clock">${clockInner(h,m,false)}</svg>`;
+SCI.clock={icon:"🕒",title:"Reading the clock",blurb:"How do we tell the time?",
+ svg:`<svg viewBox="0 0 400 450" role="img" aria-label="Analog clock">${clockInner(10,8,true)}<text id="ctx" x="200" y="436" text-anchor="middle" font-size="34" font-weight="800" fill="#2b2a4c" font-family="Trebuchet MS,Segoe UI,sans-serif"></text></svg>`,
+ tryHtml:`<p><b>Hour</b></p><input type="range" id="sh" min="1" max="12" step="1" value="3" aria-label="Hour"><p><b>Minutes</b></p><input type="range" id="sm" min="0" max="45" step="15" value="0" aria-label="Minutes"><p class="note">Minutes: 0 = o'clock, 15 = quarter past, 30 = half past, 45 = quarter to</p>`,
+ steps:[
+ {t:"This is a clock. It tells us the time. It has the numbers 1 to 12.",dur:11,hi:["face"]},
+ {t:"The short, fat, red hand is the hour hand. It tells us the hour.",dur:11,hi:["hour"]},
+ {t:"The long, thin, blue hand is the minute hand. Watch it go all the way round. That takes one hour.",dur:14,hi:["minute"]},
+ {t:"When the long hand points to 12, it is o'clock. Look: 3 o'clock, 4 o'clock, 5 o'clock.",dur:15,hi:["minute"]},
+ {t:"When the long hand points to 6, it is half past. Half past 3, half past 4, half past 5.",dur:15,hi:["minute"]},
+ {t:"When the long hand points to 3, it is quarter past. When it points to 9, it is quarter to the next hour.",dur:16,hi:["minute"]},
+ {t:"Now you try! Move the sliders to set the time. Make it half past 6!",try:true,hi:[]}],
+ bind(st){st.user.h=3;st.user.m=0;$("#sh").oninput=e=>{st.user.h=+e.target.value};$("#sm").oninput=e=>{st.user.m=+e.target.value}},
+ tick(st){
+  const E=st.E,s=st.step,sp=st.sp;let h=10,m=8;
+  if(s===0){h=10;m=8}else if(s===1){h=3;m=0}
+  else if(s===2){h=3;m=Math.min(59,Math.floor(sp/13*60))}
+  else if(s===3){h=3+Math.min(2,Math.floor(sp/4.5));m=0}
+  else if(s===4){h=3+Math.min(2,Math.floor(sp/4.5));m=30}
+  else if(s===5){if(sp<8){h=3;m=15}else{h=3;m=45}}
+  else{h=st.user.h||3;m=st.user.m||0}
+  E("hh").setAttribute("transform",`rotate(${((h%12)+m/60)*30} 200 200)`);E("mh").setAttribute("transform",`rotate(${m*6} 200 200)`);
+  E("ctx").textContent=s===0?"":s===2?`${h}:${pad2(m)}`:`${clockWords(h,m)}  (${h}:${pad2(m)})`;
+ },
+ quiz(){const out=[];
+  shuf(["o","o","h","h","q"]).forEach(k=>{const h=1+R(12),m=k=="o"?0:k=="h"?30:pick([15,45]),ans=clockWords(h,m),d=new Set();
+   while(d.size<2){const w=clockWords(Math.random()<.5?h:1+R(12),pick([0,15,30,45]));if(w!==ans)d.add(w)}
+   out.push({html:`<p>What time does the clock show?</p>${clockStatic(h,m)}`,o:shuf([ans,...d]),a:ans,say:[["What time does the clock show?","en"]]})});
+  return out}};
+
+/* ---------- Rewards ---------- */
+function shop(){
+ $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button><span class="pill">⭐ ${bal()}</span></div><h1>🎁 Reward shop</h1>
+ <p class="note">Spend stars on family time. Parents: edit the REWARDS list to add your own ideas.</p>
+ ${REWARDS.map((r,i)=>`<div class="rw"><span class="em">${r[0]}</span><div><b>${r[1]}</b><br><span class="note">${r[2]} ⭐</span></div><button class="buy" ${bal()<r[2]?"disabled":""} onclick="buy(${i})">Get it</button></div>`).join("")}
+ <p class="note">${S.bought.length?"Won so far: "+S.bought.slice(-5).join(", "):""}</p>`}
+function buy(i){const r=REWARDS[i];if(bal()<r[2])return;if(confirm(r[1]+" for "+r[2]+" stars?")){S.spent+=r[2];S.bought.push(r[1]+" ("+today()+")");save();shop()}}
+home();
+if("serviceWorker" in navigator&&location.protocol.indexOf("http")==0){navigator.serviceWorker.register("sw.js").catch(()=>{})}
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+</script>
+</body>
+</html>
