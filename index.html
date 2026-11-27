@@ -116,6 +116,19 @@ h1{font-size:30px;margin:0}
 .kb button:disabled{opacity:.85}
 .t8{background:#5a6c7d}
 
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin-bottom:6px}
+.mcard{border-radius:22px;overflow:hidden;background:var(--card);border:3px solid var(--line);padding:0;display:flex;flex-direction:column;text-align:left;color:var(--ink);box-shadow:0 4px 0 rgba(0,0,0,.08)}
+.mth{height:104px;display:flex;align-items:center;justify-content:center;font-size:52px;letter-spacing:4px}
+.mtx{padding:10px 14px 12px}.mtx b{display:block;font-size:21px}.mtx span{font-size:15px;color:var(--soft)}
+.mh{padding-left:10px;margin:22px 0 10px}
+.rwe{display:flex;gap:8px;align-items:center;margin:8px 0;flex-wrap:wrap}
+.tlrow{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:16px 0}
+.tl{width:84px;height:92px;border-radius:16px;background:var(--a);color:#fff;font-size:48px;font-weight:800;box-shadow:0 5px 0 rgba(0,0,0,.2)}
+.tl:disabled{opacity:.2;box-shadow:none}
+.bl{cursor:pointer}
+.ttt{display:grid;grid-template-columns:repeat(3,min(26vw,150px));gap:10px;justify-content:center;margin:14px auto}
+.tc{aspect-ratio:1;border-radius:18px;background:var(--card);border:4px solid var(--line);font-size:min(14vw,76px)}
+.tc.w{background:var(--ok);border-color:var(--ok)}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#fff6e0">
@@ -129,7 +142,7 @@ const shuf=a=>a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(p=>p[1]);
 const INIT={earned:0,spent:0,streak:0,last:"",done:{},bought:[],autoread:true,mazeLevel:0};
 let S;try{S=Object.assign({},INIT,JSON.parse(localStorage.getItem("daily1")||"{}"))}catch(e){S=Object.assign({},INIT)}
 const save=()=>{try{localStorage.setItem("daily1",JSON.stringify(S))}catch(e){}};
-function fixS(){S.seen=S.seen||{};S.lp=S.lp||{hi:0,kn:0}}fixS();
+function fixS(){S.maxStars=S.maxStars||3;S.seen=S.seen||{};S.lp=S.lp||{hi:0,kn:0}}fixS();
 const today=()=>new Date().toISOString().slice(0,10);
 const bal=()=>S.earned-S.spent;
 let raf=0,chain=0,speakOn=true,PL=null,qtok=0;
@@ -138,11 +151,11 @@ const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 let day=new Date().getDay()||7;
 const PLAN={
 1:{math:"add20",game:"pawn",words:"en1",puz:"maze",ex:"sci"},
-2:{math:"sub20",game:"sudoku",words:"hi",puz:"memory",ex:"coins"},
+2:{math:"sub20",game:"sudoku",words:"hi",puz:"unscramble",ex:"coins"},
 3:{math:"pattern",game:"rook",words:"kn",puz:"crossword",ex:"sci"},
 4:{math:"add2",game:"sudoku",words:"en2",puz:"clock",ex:"coins"},
 5:{math:"sub2",game:"bishop",words:"hi",puz:"wordsearch",ex:"sci"},
-6:{math:"mixed",game:"sudoku",words:"kn",puz:"maze",ex:"coins"},
+6:{math:"mixed",game:"sudoku",words:"kn",puz:"tictac",ex:"coins"},
 7:{math:"mixed",game:"chessmix",words:"review",puz:"wordguess",ex:"jars"}};
 /* English words with meanings: 8 sets of 3 */
 const EW=[
@@ -214,7 +227,7 @@ function opts(a,lo=0){const s=new Set([a]);while(s.size<3){const v=a+pick([-10,-
 const realDay=()=>new Date().getDay()||7;
 let preview=false,curId="";const skipped=new Set();
 const wkNum=()=>Math.floor((Date.now()/864e5+3)/7);
-const PZNAME={maze:"Maze",memory:"Memory match",crossword:"Crossword",clock:"Reading the clock",wordsearch:"Word search",wordguess:"Word guess"};
+const PZNAME={maze:"Maze",memory:"Memory match",crossword:"Crossword",clock:"Reading the clock",wordsearch:"Word search",wordguess:"Word guess",unscramble:"Unscramble",tictac:"Xs and Os"};
 function begin(id){curId=id;skipped.delete(id);clearTimeout(chain)}
 function fresh(key,arr,n){
  n=n||1;const seen=S.seen[key]=S.seen[key]||[];
@@ -239,7 +252,7 @@ function skipAct(){
 const skipBtn=()=>`<button class="back" onclick="skipAct()" aria-label="Skip to the next activity">Skip ⏭</button>`;
 function runPuz(ov){
  const z=ov||PLAN[day].puz;begin(ov?"more":"puz"+day);
- ({maze:runMaze,memory:runMemory,crossword:runCrossword,clock:()=>runSci("clock",curId),wordsearch:runWordSearch,wordguess:runWordGuess})[z]()}
+ ({maze:runMaze,memory:runMemory,crossword:runCrossword,clock:()=>runSci("clock",curId),wordsearch:runWordSearch,wordguess:runWordGuess,unscramble:runUnscramble,tictac:runTicTac})[z]()}
 
 /* ---------- Home ---------- */
 function home(){
@@ -251,7 +264,7 @@ function home(){
  const wk=p.words;
  const wl=wk=="review"?"Word review":wk[0]=="e"?"English words":wk=="hi"?"Hindi letters":"Kannada letters";
  const wsub=wk=="review"?"Words and letters so far":wk[0]=="e"?"3 new words today":"2 new letters today";
- const pz={maze:["🐭","Maze","Help the mouse find the cheese"],memory:["🃏","Memory match","Match words and pictures"],crossword:["✏️","Crossword","Fill in the words"],clock:["🕒","Reading the clock","Learn to tell the time"],wordsearch:["🔎","Word search","Find the hidden words"],wordguess:["💬","Word guess","Guess the word from the clue"]}[p.puz];
+ const pz={maze:["🐭","Maze","Help the mouse find the cheese"],memory:["🃏","Memory match","Match words and pictures"],crossword:["✏️","Crossword","Fill in the words"],clock:["🕒","Reading the clock","Learn to tell the time"],wordsearch:["🔎","Word search","Find the hidden words"],wordguess:["💬","Word guess","Guess the word from the clue"],unscramble:["🔀","Unscramble","Put the letters in order"],tictac:["❌","Xs and Os","Play against the tablet"]}[p.puz];
  const left=acts().filter(a=>!isDone(a.id)).length;
  $("#app").innerHTML=`${preview?`<div class="prev">👀 Previewing ${DAYS[day]}. No stars here. <button class="back" onclick="preview=false;home()">Back to today</button></div>`:""}
  <div class="top"><h1>🌟 Atharva Activity</h1><div><span class="pill">⭐ ${bal()}</span> <span class="pill">🔥 ${S.streak}</span></div></div>
@@ -268,27 +281,40 @@ function home(){
  </div>
  <button class="shop" onclick="shop()">🎁 Reward shop · ⭐ ${bal()} stars to spend</button>
  <p class="note center">Finishing an activity in today's plan earns 1 to 3 ⭐ (the first time each day). Stars are never taken away.</p>
- <p class="center"><button class="back" onclick="parents()">⚙️ Parents</button></p><p class="note center">Version 4</p>`;
+ <p class="center"><button class="back" onclick="parents()">⚙️ Parents</button></p><p class="note center">Version 5</p>`;
 }
 
 /* ---------- More activities (no stars) ---------- */
 const MORE=[
-["🔢 Numbers",[["Add to 20",()=>runMath("add20")],["Take away within 20",()=>runMath("sub20")],["What comes next?",()=>runMath("pattern")],["Add bigger numbers",()=>runMath("add2")],["Take away bigger numbers",()=>runMath("sub2")],["Mixed challenge",()=>runMath("mixed")]]],
-["♟️ Chess and sudoku",[["Chess: the pawn",()=>runGame("pawn")],["Chess: the rook",()=>runGame("rook")],["Chess: the bishop",()=>runGame("bishop")],["Chess practice (all pieces)",()=>runGame("chessmix")],["Mini sudoku",()=>runGame("sudoku")]]],
-["📖 Words and letters",[["English words",()=>runWords("en1")],["Hindi letters",()=>runWords("hi")],["Kannada letters",()=>runWords("kn")],["Word review",()=>runWords("review")]]],
-["🧩 Puzzles",[["Word guess",()=>runPuz("wordguess")],["Crossword",()=>runPuz("crossword")],["Word search",()=>runPuz("wordsearch")],["Maze",()=>runPuz("maze")],["Memory match",()=>runPuz("memory")],["Reading the clock",()=>runPuz("clock")]]],
-["🪙 Money",[["Coin shop",()=>runMoney("coins")],["Three jars",()=>runMoney("jars")]]],
-["🔬 How things work",[["Steering wheel",()=>runSci("steer","more")],["Magnets",()=>runSci("magnet","more")],["Day and night",()=>runSci("sky","more")],["Water cycle",()=>runSci("water","more")]]],
-["❓ Questions",[["Ask a question",()=>runAsk()]]]];
-const runMore=(i,j)=>MORE[i][1][j][1]();
+["🔢 Numbers","#ff9a5a","#ffd27a",[["Add to 20","➕🔢","Add small numbers",()=>runMath("add20")],["Take away within 20","➖🍎","Count back",()=>runMath("sub20")],["What comes next?","🔢➡️❓","Find the pattern",()=>runMath("pattern")],["Add bigger numbers","🔟➕","Two-digit adding",()=>runMath("add2")],["Take away bigger numbers","🔟➖","Two-digit taking away",()=>runMath("sub2")],["Mixed challenge","🎲🔢","A bit of everything",()=>runMath("mixed")]]],
+["♟️ Chess and sudoku","#6c5ce7","#b3a8ff",[["Chess: the pawn","♟️","Learn how it moves",()=>runGame("pawn")],["Chess: the rook","♜","Slides in lines",()=>runGame("rook")],["Chess: the bishop","♝","Slides diagonally",()=>runGame("bishop")],["Chess practice","♟️♜♝","All the pieces",()=>runGame("chessmix")],["Mini sudoku","🧩","Fill every row and box",()=>runGame("sudoku")]]],
+["📖 Words and letters","#2bb3a3","#8ee6da",[["English words","📖🔤","3 new words",()=>runWords("en1")],["Hindi letters","अ आ","Learn the letters",()=>runWords("hi")],["Kannada letters","ಅ ಆ","Learn the letters",()=>runWords("kn")],["Word review","🔁📖","Words and letters so far",()=>runWords("review")]]],
+["🧩 Puzzles","#8e44ad","#d2a8e6",[["Word guess","💬🔤","Guess from the clue",()=>runPuz("wordguess")],["Unscramble","🔀🔤","Put letters in order",()=>runPuz("unscramble")],["Xs and Os","❌⭕","Play the tablet",()=>runPuz("tictac")],["Crossword","✏️🔤","Fill in the words",()=>runPuz("crossword")],["Word search","🔎🔤","Find hidden words",()=>runPuz("wordsearch")],["Maze","🐭🧀","Find the cheese",()=>runPuz("maze")],["Memory match","🃏🐶","Match word and picture",()=>runPuz("memory")],["Reading the clock","🕒","Learn to tell time",()=>runPuz("clock")]]],
+["🪙 Money","#f0a500","#ffe08a",[["Coin shop","🪙🛍️","Count and buy",()=>runMoney("coins")],["Three jars","🐷🛍️🎁","Save, spend, share",()=>runMoney("jars")]]],
+["🔬 How things work","#3b82f6","#a5c8ff",[["Steering wheel","🚗🔄","How a car turns",()=>runSci("steer","more")],["Magnets","🧲📎","Pull and push",()=>runSci("magnet","more")],["Day and night","🌍☀️🌙","Why it gets dark",()=>runSci("sky","more")],["Water cycle","💧☁️🌧️","Rain goes round",()=>runSci("water","more")]]],
+["❓ Questions","#e5484d","#ffa3a8",[["Ask a question","❓🎤","Get an answer",()=>runAsk()]]]];
+const runMore=(i,j)=>MORE[i][3][j][3]();
 function moreList(){
  stopScene();curId="more";
  $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button><span class="pill">⭐ ${bal()}</span></div><h1>➕ More activities</h1>
  <p class="note">Extra practice for when he wants more. These do not earn stars, and each one gives a fresh set.</p>
- ${MORE.map((s,i)=>`<h3 class="mh">${s[0]}</h3><div class="mlist">${s[1].map((x,j)=>`<button class="mbtn" onclick="runMore(${i},${j})">${x[0]}</button>`).join("")}</div>`).join("")}`;
+ ${MORE.map((s,i)=>`<h3 class="mh" style="border-left:8px solid ${s[1]}">${s[0]}</h3><div class="mgrid">${s[3].map((x,j)=>`<button class="mcard" onclick="runMore(${i},${j})"><span class="mth" style="background:linear-gradient(135deg,${s[1]},${s[2]})">${x[1]}</span><span class="mtx"><b>${x[0]}</b><span>${x[2]}</span></span></button>`).join("")}</div>`).join("")}`;
 }
 
 /* ---------- Parents ---------- */
+/* ---------- Edit rewards (parents) ---------- */
+let rtmp=[];
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+function rwSync(){rtmp=rtmp.map((r,i)=>$("#re"+i)?[$("#re"+i).value.trim()||"🎁",$("#rn"+i).value.trim()||"Reward",Math.max(1,Math.floor(+$("#rc"+i).value)||1)]:r)}
+function rewardsEditor(fresh,note){
+ if(fresh===true)rtmp=rw().map(r=>r.slice());
+ $("#app").innerHTML=`<div class="top"><button class="back" onclick="parentsPanel()">⬅ Parents</button></div><h1>✏️ Edit rewards</h1><p class="note">${note||"Change the picture, name and star cost. Tap Save when you are done."}</p>
+ ${rtmp.map((r,i)=>`<div class="rwe"><input class="txt" id="re${i}" value="${esc(r[0])}" maxlength="4" style="width:84px;text-align:center" aria-label="Picture"><input class="txt" id="rn${i}" value="${esc(r[1])}" style="flex:1;min-width:160px" aria-label="Name"><input class="txt" id="rc${i}" type="number" inputmode="numeric" value="${r[2]}" style="width:100px" aria-label="Star cost"><span>⭐</span><button class="back" onclick="rwDel(${i})" aria-label="Delete">🗑</button></div>`).join("")}
+ <p><button class="back" onclick="rwSync();rtmp.push(['🎁','New reward',30]);rewardsEditor()">➕ Add a reward</button> <button class="go" onclick="rwSave()">Save</button> <button class="back" onclick="rtmp=REWARDS.map(r=>r.slice());rewardsEditor()">Reset to original</button></p>
+ <h3>Rewards bought so far</h3><p class="note">${S.bought.length?S.bought.slice(-15).reverse().map(esc).join("<br>"):"Nothing yet."}</p>`}
+function rwDel(i){rwSync();rtmp.splice(i,1);rewardsEditor()}
+function rwSave(){rwSync();if(!rtmp.length)return rewardsEditor(false,"Keep at least one reward.");S.rewards=rtmp.map(r=>r.slice());save();parentsPanel("Rewards saved.")}
+
 function gateThen(then){
  const a=6+R(4),b=6+R(4);
  $("#app").innerHTML=`<div class="q center"><h2>👨‍👩‍👦 Grown-ups only</h2><p>What is <b>${a} × ${b}</b>?</p><input class="txt" id="gt" type="number" inputmode="numeric" style="max-width:200px;text-align:center"><br><button class="go" id="gk">OK</button> <button class="back" onclick="home()">Cancel</button><p class="note" id="gn2"></p></div>`;
@@ -300,6 +326,9 @@ function parentsPanel(note){
  <h3>Stars: ⭐ ${bal()}</h3>
  <p>Set the star balance:</p><input class="txt" id="sb2" type="number" inputmode="numeric" value="${bal()}"><button class="go" id="sbb">Set stars</button>
  <h3>Read questions aloud automatically</h3><button class="back" id="ar">${S.autoread?"On (tap to turn off)":"Off (tap to turn on)"}</button>
+ <h3>Most stars per activity</h3><p class="note">Now: ${S.maxStars}. Each activity earns 1 star for finishing, and up to this many for doing well.</p>
+ <div class="mlist">${[1,2,3].map(n=>`<button class="mbtn" onclick="S.maxStars=${n};save();parentsPanel('Most stars per activity is now ${n}.')">${n} ${S.maxStars==n?"✔":""}</button>`).join("")}</div>
+ <h3>Rewards</h3><p class="note">Change the pictures, names and star costs of the rewards.</p><button class="back" onclick="rewardsEditor(true)">✏️ Edit rewards</button>
  <h3>Preview another day's plan</h3><p class="note">Look at any day. No stars are given while previewing.</p>
  <div class="mlist">${[1,2,3,4,5,6,7].map(d=>`<button class="mbtn" onclick="preview=true;day=${d};home()">${DAYS[d]}</button>`).join("")}</div>
  <h3>Back up progress</h3><p class="note">Copy this code and keep it somewhere safe, for example in a note. Use it to restore if the stars ever reset.</p>
@@ -317,7 +346,7 @@ function parentsPanel(note){
 /* Stars: 1 for finishing, +1 at 60% right first time, +1 at 90%. Max 3, only for today's plan, only the first time each day. */
 function grade(id,frac){
  if(!inPlan(id)||isDone(id))return 0;
- const n=1+(frac>=.6?1:0)+(frac>=.9?1:0);star(n);finishAct(id);return n}
+ const n=Math.min(S.maxStars||3,1+(frac>=.6?1:0)+(frac>=.9?1:0));star(n);finishAct(id);return n}
 const sayClean=h=>{const d=document.createElement("div");d.innerHTML=h.replace(/<\/(p|div|h\d)>/g," ");d.querySelectorAll("button").forEach(b=>b.remove());
  return d.textContent.replace(/₹\s*(\d+)/g,"$1 rupees").replace(/=\s*\?/g," equals what").replace(/,\s*\?/g,", what").replace(/−/g," minus ").replace(/\+/g," plus ").replace(/×/g," times ").replace(/=/g," equals ").replace(/\s+/g," ").trim()};
 const optSay=o=>{const c=sayClean(String(o));const t=c.replace(/[^\p{L}\p{M}\p{N}\s'.,]/gu,"").replace(/\s+/g," ").trim();return t||c};
@@ -659,7 +688,7 @@ function runSci(key,qid){
  stopScene();qid=qid==="more"?"more":(qid||("sci"+day));begin(qid);
  const sc=SCI[key],steps=sc.steps;
  $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button>${skipBtn()}<span class="pill">${sc.icon} ${sc.title}</span></div>
- <div class="stage" id="stage">${sc.svg}</div><div class="tryz" id="tz">${sc.tryHtml}</div><div class="cap" id="cap"></div>
+ <div class="stage" id="stage">${sc.svg}</div><div class="tryz" id="tz">${sc.tryHtml}<p class="center"><button class="go" id="tq">✅ I tried it! Take the quiz</button></p></div><div class="cap" id="cap"></div>
  <div class="bar"><i id="sb" style="width:0"></i></div>
  <div class="ctl"><button id="bk" aria-label="Back">⏮</button><button id="pp" aria-label="Pause">⏸</button><button id="fw" aria-label="Next">⏭</button><button id="mu" aria-label="Sound">${speakOn?"🔊":"🔇"}</button></div>`;
  const root=$("#stage svg"),st={t:0,sp:0,step:0,e:{},user:{},root,E:id=>st.e[id]||(st.e[id]=root.querySelector("#"+id))};
@@ -687,7 +716,7 @@ function runSci(key,qid){
  $("#fw").onclick=()=>go(st.step+1);
  $("#pp").onclick=()=>{paused=!paused;$("#pp").textContent=paused?"▶":"⏸";if(paused){try{speechSynthesis.cancel()}catch(e){}}else if(speakOn)speak(steps[st.step].t,"en")};
  $("#mu").onclick=()=>{speakOn=!speakOn;$("#mu").textContent=speakOn?"🔊":"🔇";if(!speakOn){try{speechSynthesis.cancel()}catch(e){}}};
- sc.bind(st);go(0);raf=requestAnimationFrame(frame);
+ $("#tq").onclick=()=>finish();sc.bind(st);go(0);raf=requestAnimationFrame(frame);
 }
 
 /* ---------- Ask a question ---------- */
@@ -716,44 +745,36 @@ function runAsk(){
   const q=$("#qt").value.trim();
   if(inApp)return note("This needs the Chrome version of the app.");
   if(!q)return note("Ask or type a question first.");
-  if(!navigator.onLine)return note("No internet right now. The animations still work offline.");
-  const a=6+R(4),b=6+R(4);
-  $("#app").innerHTML=`<div class="q center"><h2>👨‍👩‍👦 Grown-ups only</h2><p>Videos come from YouTube, so a grown-up should sit with Atharva.</p><p>To open it, what is <b>${a} × ${b}</b>?</p><input class="txt" id="gt" type="number" inputmode="numeric" style="max-width:200px;text-align:center"><br><button class="go" id="gk">Open videos</button> <button class="back" onclick="runAsk()">Cancel</button><p class="note" id="gn2"></p></div>`;
-  $("#gk").onclick=()=>{
-   if(+$("#gt").value!==a*b)return($("#gn2").textContent="Not quite. Try again.");
-   window.open("https://www.youtube.com/results?search_query="+encodeURIComponent(q+" for kids")+"&sp=EgIYAQ%253D%253D","_blank","noopener");
-   runAsk()}};
+  if(!navigator.onLine)return note("No internet right now. Answers need the internet. The animations still work offline.");
+  answerQ(q)};
 }
-
-/* ---------- Science question banks (6 per story, 3 asked, fresh each time) ---------- */
-const SCIQ={
-steer:[["What is the flat bar with teeth called?",["Rack","Shaft","Door"],"Rack","The flat bar with teeth is called the rack."],
-["What does the shaft carry down from the steering wheel?",["The turning","Water","Music"],"The turning","The shaft is a rod. It carries the turning from the wheel down to the gear."],
-["What do the rods push and pull?",["The front wheels","The seats","The radio"],"The front wheels","The rods are joined to the front wheels, so they push and pull them to steer."],
-["What is a gear?",["A wheel with teeth","A bag of air","A soft pillow"],"A wheel with teeth","A gear is a wheel with teeth that grab other teeth."],
-["When the gear spins, what slides left or right?",["The rack","The seat","The roof"],"The rack","The gear's teeth grab the rack, so the rack slides sideways."],
-["What do we turn to make a car go left or right?",["The steering wheel","The horn","The door"],"The steering wheel","The steering wheel is what the driver turns to steer the car."]],
-magnet:[["Different ends of two magnets…",["pull together","push apart","do nothing"],"pull together","Different ends, a north and a south, pull together."],
-["Same ends of two magnets…",["push apart","pull together","sing"],"push apart","Same ends, two norths or two souths, push each other away."],
-["Which one sticks to a magnet?",["📎","🧸","🪵"],"📎","A paper clip is made of iron, and magnets stick to iron. Toys and wood do not stick."],
-["What do magnets pull?",["Things made of iron","Things made of paper","Things made of wool"],"Things made of iron","Magnets pull things made of iron, like paper clips and nails."],
-["How many ends, or poles, does a magnet have?",["Two","Ten","Zero"],"Two","A magnet has two poles, a north and a south."],
-["Which one will a magnet NOT pick up?",["🧸","🔩","📎"],"🧸","A soft toy is not made of iron, so the magnet does not pick it up."]],
-sky:[["What spins round to give us day and night?",["Earth","Sun","Cloud"],"Earth","The Earth spins round like a top. That gives us day and night."],
-["How long does one spin of Earth take?",["One day","One hour","One year"],"One day","One full spin of the Earth takes one day."],
-["When our home faces the Sun, it is…",["day","night"],"day","When our side of the Earth faces the Sun, it is day."],
-["When our home faces away from the Sun, it is…",["night","day"],"night","When our side turns away from the Sun, it is dark. That is night."],
-["What gives us light in the day?",["The Sun","A star far away","A cloud"],"The Sun","The Sun is a very bright star that gives us light in the day."],
-["Which one shines in the sky at night?",["The Moon","The Sun","A rainbow"],"The Moon","We can see the Moon at night. The Sun is on the other side of the Earth."]],
-water:[["What warms the sea water?",["The Sun","The Moon","A fan"],"The Sun","The hot Sun warms the water."],
-["Water going up as tiny drops is called…",["evaporation","a river","snow"],"evaporation","Water rising as tiny drops is called evaporation."],
-["What falls from a heavy cloud?",["Rain","Sand","Leaves"],"Rain","When a cloud gets heavy with water, rain falls."],
-["What makes a cloud?",["Tiny drops of water","Smoke","Cotton"],"Tiny drops of water","Clouds are made of lots of tiny drops of water."],
-["Where does the rain go after it falls?",["Into rivers and the sea","Into the Sun","Up to the Moon"],"Into rivers and the sea","Rain flows into rivers, and rivers flow to the sea."],
-["The water cycle goes round and round. What is it?",["Water going up, making clouds, and falling again","Water staying in one place","Water going away forever"],"Water going up, making clouds, and falling again","The water goes up, makes clouds, falls as rain, and then goes up again."]]};
-function sciQuiz(key){return fresh("sq"+key,SCIQ[key],3).map(q=>({html:`<p>${q[0]}</p>`,o:shuf(q[1]),a:q[2],why:()=>q[3]}))}
-Object.keys(SCIQ).forEach(k=>{SCI[k].quiz=()=>sciQuiz(k)});
-const clockWhy=(h,m)=>m==0?`The long hand points to 12, so it is ${h} o'clock.`:m==30?`The long hand points to 6, so it is half past ${h}.`:m==15?`The long hand points to 3, so it is quarter past ${h}.`:`The long hand points to 9, so it is quarter to ${h%12+1}.`;
+function cleanQ(q){let s=q.toLowerCase().replace(/[?!.,]/g," ").replace(/\s+/g," ").trim();for(let k=0;k<4;k++)s=s.replace(/^(why|what|how|who|where|when|which|do|does|did|is|are|was|were|can|could|will|the|a|an|tell me about|explain|i want to know)\s+/,"");return s||q}
+async function wiki(term){
+ const u="https://simple.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch="+encodeURIComponent(term)+"&gsrlimit=3&prop=extracts&exintro=1&explaintext=1&exsentences=3&format=json&origin=*";
+ const r=await fetch(u);const j=await r.json();
+ const pgs=j.query?Object.values(j.query.pages).sort((a,b)=>a.index-b.index):[];
+ const pg=pgs.find(p=>p.extract&&p.extract.length>40);
+ return pg?{title:pg.title,text:pg.extract.replace(/\s*\([^)]*\)/g," ").replace(/\s+/g," ").trim().slice(0,420)}:null}
+async function answerQ(q){
+ stopScene();
+ $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button></div><div class="q center"><div class="big">🤔</div><p>Let me find out…</p></div>`;
+ if(/[^\u0000-\u007f]/.test(q))return showAns(q,null,"I can only find answers in English for now. Try asking in English, or watch a video.");
+ try{const a=await wiki(cleanQ(q))||await wiki(q);showAns(q,a,a?"":"I could not find an answer for that. Try asking in a different way, or watch a video.")}
+ catch(e){showAns(q,null,"I could not look that up right now. Check the internet and try again, or watch a video.")}}
+function showAns(q,a,msg){
+ const text=a?a.text:msg;
+ $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button></div><h1>❓ ${esc(q)}</h1>
+ <div class="q" style="text-align:left">${a?`<h3>${esc(a.title)}</h3>`:""}<p style="font-size:26px;line-height:1.45">${esc(text)}</p>${a?`<p class="note">From Simple English Wikipedia. A grown-up can check it with him.</p>`:""}
+ <div class="center"><button class="go" id="ah">🔊 Hear it</button> <button class="go" id="av" style="background:var(--c)">🎬 Watch a video?</button> <button class="back" id="aq">Ask another question</button></div></div>`;
+ $("#ah").onclick=()=>speak(text,"en");$("#aq").onclick=()=>runAsk();$("#av").onclick=()=>videoGate(q,()=>showAns(q,a,msg));
+ if(S.autoread)speak(text,"en")}
+function videoGate(q,back){
+ const a=6+R(4),b=6+R(4);
+ $("#app").innerHTML=`<div class="q center"><h2>👨‍👩‍👦 Grown-ups only</h2><p>Videos come from YouTube, so a grown-up should sit with Atharva.</p><p>To open it, what is <b>${a} × ${b}</b>?</p><input class="txt" id="gt" type="number" inputmode="numeric" style="max-width:200px;text-align:center"><br><button class="go" id="gk">Open video search</button> <button class="back" id="gb">Cancel</button><p class="note" id="gn2"></p></div>`;
+ $("#gb").onclick=back;
+ $("#gk").onclick=()=>{
+  if(+$("#gt").value!==a*b)return($("#gn2").textContent="Not quite. Try again.");
+  window.open("https://www.youtube.com/results?search_query="+encodeURIComponent(q+" for kids")+"&sp=EgIYAQ%253D%253D","_blank","noopener");back()}}
 
 /* ---------- Maze ---------- */
 function mazeGen(n){
@@ -905,6 +926,67 @@ function runWordGuess(){
   document.onkeydown=e=>{if(/^[a-z]$/i.test(e.key))press(e.key.toUpperCase())}};
  round()}
 
+
+/* ---------- Unscramble ---------- */
+function runUnscramble(){
+ const id=curId,items=fresh("us",WG,4);let i=0,wrong=0,hints=0;
+ const round=()=>{
+  if(curId!==id)return;
+  if(i>=items.length){const s=grade(id,clamp(1-(wrong+hints)/10,0,1));return end("Unscramble",s)}
+  const [w,clue,pic]=items[i];let tiles;do{tiles=shuf([...w])}while(tiles.join("")===w);
+  const slots=Array(w.length).fill(-1);let tries=0,usedPic=false,locked=false;
+  const draw=()=>{
+   $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button>${skipBtn()}<span class="pill">Word ${i+1} of ${items.length}</span></div>
+   <div class="bar"><i style="width:${i/items.length*100}%"></i></div>
+   <div class="q"><p class="wgc">Put the letters in order.<br>${clue}</p><p><button class="speak" id="usp" style="width:56px;height:56px;font-size:26px" aria-label="Hear the clue">🔊</button> <button class="back" id="uph">🖼️ Show a picture</button></p>
+   <div class="pichint" id="uim">${usedPic?pic:""}</div>
+   <div class="blanks">${slots.map((t,k)=>`<span class="bl" data-k="${k}">${t>=0?tiles[t]:""}</span>`).join("")}</div>
+   <div class="fb" id="fb" aria-live="polite"></div>
+   <div class="tlrow">${tiles.map((c,k)=>`<button class="tl" data-t="${k}" ${slots.includes(k)?"disabled":""}>${c}</button>`).join("")}</div></div>`;
+   $("#usp").onclick=()=>speak(clue,"en");
+   $("#uph").onclick=()=>{if(!usedPic){usedPic=true;hints++}$("#uim").textContent=pic};
+   document.querySelectorAll(".bl").forEach(b=>b.onclick=()=>{if(locked)return;const k=+b.dataset.k;if(slots[k]>=0){slots[k]=-1;draw()}});
+   document.querySelectorAll(".tl").forEach(b=>b.onclick=()=>{
+    if(locked)return;const k=slots.indexOf(-1);if(k<0)return;slots[k]=+b.dataset.t;
+    if(slots.indexOf(-1)>=0)return draw();
+    draw();const guess=slots.map(t=>tiles[t]).join("");
+    if(guess===w){locked=true;speak(w.toLowerCase(),"en");$("#fb").className="fb g";$("#fb").textContent="🎉 "+w+"!";setTimeout(()=>{if(curId===id){i++;round()}},1500)}
+    else{locked=true;wrong++;tries++;const lead=tries==1?"Not quite.":pick(ALMOST),msg=lead+" Read the clue again and try a different order.";const fb=$("#fb");fb.className="fb "+(tries==1?"r":"y");fb.textContent=msg;if(S.autoread)speakSeq([[msg,"en"]]);
+     setTimeout(()=>{if(curId===id){slots.fill(-1);locked=false;draw();const f=$("#fb");if(f){f.className="fb "+(tries==1?"r":"y");f.textContent=msg}}},1300)}})};
+  draw();if(S.autoread)speak(clue,"en")};
+ round()}
+
+/* ---------- Xs and Os ---------- */
+function runTicTac(){
+ const id=curId,planned=id!=="more"&&inPlan(id)&&!isDone(id),lvl=S.ttt||0,TOTAL=3;
+ const LN=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+ let gm=0,wins=0,draws=0;
+ const won=(b,p)=>LN.some(l=>l.every(i=>b[i]===p));
+ const findTwo=(b,p)=>{for(const l of LN){const c=l.filter(i=>b[i]===p).length,e=l.find(i=>!b[i]);if(c===2&&e!==undefined)return e}return -1};
+ const ai=b=>{
+  const emp=b.map((v,i)=>v?-1:i).filter(i=>i>=0);
+  if(lvl>=1&&Math.random()<(lvl==1?.55:.95)){let m=findTwo(b,"O");if(m<0)m=findTwo(b,"X");if(m<0&&!b[4])m=4;if(m<0){const cs=[0,2,6,8].filter(i=>!b[i]);if(cs.length)m=pick(cs)}if(m>=0)return m}
+  return pick(emp)};
+ const game=()=>{
+  if(curId!==id)return;
+  if(gm>=TOTAL){const s=grade(id,clamp((wins+draws*.7)/TOTAL,0,1));if(planned){S.ttt=Math.min(lvl+1,2);save()}return end("Xs and Os",s)}
+  const b=Array(9).fill("");let over=false,busy=false,msg="Your turn. You are ❌. Get three in a row!";
+  const draw=(hi)=>{
+   $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button>${skipBtn()}<span class="pill">Game ${gm+1} of ${TOTAL}</span></div>
+   <p class="center"><b>${msg}</b></p><div class="ttt">${b.map((v,i)=>`<button class="tc ${v=="X"?"x":v=="O"?"o":""} ${hi&&hi.includes(i)?"w":""}" data-i="${i}" aria-label="Square ${i+1}">${v=="X"?"❌":v=="O"?"⭕":""}</button>`).join("")}</div>${over?`<p class="center"><button class="go" id="tn">${gm+1<TOTAL?"Next game":"Finish"}</button></p>`:""}`;
+   if(over){$("#tn").onclick=()=>{gm++;game()};return}
+   document.querySelectorAll(".tc").forEach(c=>c.onclick=()=>{
+    const i=+c.dataset.i;if(b[i]||busy||over)return;b[i]="X";
+    if(won(b,"X")){over=true;wins++;msg="🎉 You got three in a row! You won!";speak("You won!","en");return draw(LN.find(l=>l.every(k=>b[k]==="X")))}
+    if(b.every(v=>v)){over=true;draws++;msg="🤝 It is a draw. Good game!";speak("It is a draw. Good game!","en");return draw()}
+    busy=true;msg="Thinking…";draw();
+    setTimeout(()=>{if(curId!==id)return;b[ai(b)]="O";busy=false;
+     if(won(b,"O")){over=true;msg="The tablet got three in a row. Good try! Next time, block its two in a row.";speak("Good try! Next time, block its two in a row.","en");return draw(LN.find(l=>l.every(k=>b[k]==="O")))}
+     if(b.every(v=>v)){over=true;draws++;msg="🤝 It is a draw. Good game!";speak("It is a draw. Good game!","en");return draw()}
+     msg="Your turn!";draw()},650)})};
+  draw();if(gm==0)speak("You are X. Get three in a row!","en")};
+ game()}
+
 const pad2=n=>String(n).padStart(2,"0");
 const clockWords=(h,m)=>m==0?`${h} o'clock`:m==30?`half past ${h}`:m==15?`quarter past ${h}`:m==45?`quarter to ${h%12+1}`:`${h}:${pad2(m)}`;
 const clockInner=(h,m,ids)=>{
@@ -949,10 +1031,11 @@ SCI.clock={icon:"🕒",title:"Reading the clock",blurb:"How do we tell the time?
 /* ---------- Rewards ---------- */
 function shop(){
  $("#app").innerHTML=`<div class="top"><button class="back" onclick="home()">⬅ Home</button><span class="pill">⭐ ${bal()}</span></div><h1>🎁 Reward shop</h1>
- <p class="note">Spend stars on family time. Parents: edit the REWARDS list to add your own ideas.</p>
- ${REWARDS.map((r,i)=>`<div class="rw"><span class="em">${r[0]}</span><div><b>${r[1]}</b><br><span class="note">${r[2]} ⭐</span></div><button class="buy" ${bal()<r[2]?"disabled":""} onclick="buy(${i})">Get it</button></div>`).join("")}
+ <p class="note">Spend stars on family time.</p>
+ ${rw().map((r,i)=>`<div class="rw"><span class="em">${r[0]}</span><div><b>${r[1]}</b><br><span class="note">${r[2]} ⭐</span></div><button class="buy" ${bal()<r[2]?"disabled":""} onclick="buy(${i})">Get it</button></div>`).join("")}
  <p class="note">${S.bought.length?"Won so far: "+S.bought.slice(-5).join(", "):""}</p>`}
-function buy(i){const r=REWARDS[i];if(bal()<r[2])return;if(confirm(r[1]+" for "+r[2]+" stars?")){S.spent+=r[2];S.bought.push(r[1]+" ("+today()+")");save();shop()}}
+const rw=()=>S.rewards||REWARDS;
+function buy(i){const r=rw()[i];if(bal()<r[2])return;if(confirm(r[1]+" for "+r[2]+" stars?")){S.spent+=r[2];S.bought.push(r[1]+" ("+today()+")");save();shop()}}
 home();
 if("serviceWorker" in navigator&&location.protocol.indexOf("http")==0){navigator.serviceWorker.register("sw.js").catch(()=>{})}
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
